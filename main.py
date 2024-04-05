@@ -794,7 +794,7 @@ class Interface:
 
         # Créez un label pour afficher l'image
         logo_label = ttk.Label(input_logo, image=input_logo_img, background="#1C1C1C", anchor="center")
-        logo_label.grid(row=0, column=0, columnspan=2, pady=(0, 20), padx=(0, 0), sticky="n")
+        logo_label.grid(row=0, column=0, columnspan=2, pady=(0, 10), padx=(0, 0), sticky="n")
         # Ajoutez des poids pour partager la hauteur
         logo_label.grid_rowconfigure(0, weight=1)
 
