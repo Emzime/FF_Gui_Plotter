@@ -1,10 +1,10 @@
 Tuto linux @Eal:<br>
-git clone https://github.com/Emzime/FF_Gui_Plotter.git
-cd FF_Gui_Plotter
-python -m venv venv
-venv/bin/pip install psutil ttkthemes
-venv/bin/python main.py
+git clone https://github.com/Emzime/FF_Gui_Plotter.git<br>
+cd FF_Gui_Plotter<br>
+python -m venv venv<br>
+venv/bin/pip install psutil ttkthemes<br>
+venv/bin/python main.py<br><br>
 
-ou
-pip install psutil ttkthemes
+ou<br>
+pip install psutil ttkthemes<br>
 python main.py
