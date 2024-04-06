@@ -362,7 +362,7 @@ class ProgressBar:
                         current_bad_plot_number = int(current_bad_plot_number) if current_bad_plot_number is not None else 0
                         # Ajoute 1 au total de plot supprimé
                         new_bad_plot_number = current_bad_plot_number + 1
-                        # Mise à jour de l'interface
+                        # Mise à jour de l'interface graphique
                         self.interface.bad_plot_number_label.config(text=f"{new_bad_plot_number}")
                         # Mise à jour du fichier de configuration
                         self.config_manager.update_config({"bad_plot_number": new_bad_plot_number}, self.config_manager.config_stats)
@@ -384,9 +384,8 @@ class ProgressBar:
                             current_total_plot_created = int(current_total_plot_created) if current_total_plot_created is not None else 0
                             # Ajoute 1 au total de plot créé
                             new_total_plot_created = current_total_plot_created + 1
-                            # Mise à jour de l'interface
+                            # Mise à jour de l'interface graphique
                             self.interface.current_plot_text.config(text=f"{self.initialize_variables.current_plot_number}")
-                            # Mise à jour de l'interface
                             self.interface.total_plot_number_label.config(text=f"{new_total_plot_created}")
                             # Mise à jour du fichier de configuration
                             self.config_manager.update_config({"total_plot_created": new_total_plot_created}, self.config_manager.config_stats)
@@ -410,7 +409,7 @@ class ProgressBar:
                                 self.interface.progress_single_plot_bar["value"] = progress_percentage
                                 self.interface.progress_label.config(text=f"{progress_percentage:.2f}%")
 
-                            # Mise à jour de l'interface
+                            # Mise à jour de l'interface graphique
                             self.plotter_gui.update_idletasks()
 
                 # Pause pour éviter une utilisation excessive du CPU
@@ -552,10 +551,11 @@ class Interface:
         # Liste pour stocker les exécutables disponibles
         available_executables = []
 
-        # Parcourir les fichiers dans le répertoire "Plotter"
+        # Parcourir les fichiers dans le répertoire "Plotter" et normaliser les chemins
         for file_name in os.listdir(self.config_manager.plotter_directory):
             file_path = os.path.join(self.config_manager.plotter_directory, file_name)
-            if os.path.isfile(file_path) and os.access(file_path, os.X_OK):
+            normalized_file_path = os.path.normpath(file_path)
+            if os.path.isfile(normalized_file_path) and os.access(normalized_file_path, os.X_OK):
                 available_executables.append(file_name)
 
         # Récupération de la correspondance
@@ -698,8 +698,7 @@ class Interface:
         self.total_plot_text.grid(row=0, column=0, padx=(10, 0), pady=(0, 0), sticky="w")
 
         # Ajoutez le nombre total de plots créés
-        self.total_plot_number_label = tk.Label(progress_current_plot_frame, text=self.config_manager.read_config(self.config_manager.config_stats).get("total_plot_created"),
-                                                bg="#1C1C1C", fg="#BFBFBF")
+        self.total_plot_number_label = tk.Label(progress_current_plot_frame, text=self.config_manager.read_config(self.config_manager.config_stats).get("total_plot_created"), bg="#1C1C1C", fg="#BFBFBF")
         self.total_plot_number_label.grid(row=0, column=1, padx=(0, 10), pady=(0, 0), sticky="w")
 
         # Crée un label pour afficher le nombre d'anciens plots supprimés
@@ -707,9 +706,7 @@ class Interface:
         self.deleted_plot_text.grid(row=1, column=0, padx=(10, 0), pady=(0, 0), sticky="w")
 
         # Ajoutez le nombre d'anciens plots supprimés
-        self.deleted_plot_number_label = tk.Label(progress_current_plot_frame,
-                                                  text=self.config_manager.read_config(self.config_manager.config_stats).get("deleted_plot_number"), bg="#1C1C1C",
-                                                  fg="#BFBFBF")
+        self.deleted_plot_number_label = tk.Label(progress_current_plot_frame, text=self.config_manager.read_config(self.config_manager.config_stats).get("deleted_plot_number"), bg="#1C1C1C", fg="#BFBFBF")
         self.deleted_plot_number_label.grid(row=1, column=1, padx=(0, 10), pady=(0, 0), sticky="w")
 
         # Crée un label pour le nombre de plots supprimés lors de la création
@@ -717,8 +714,7 @@ class Interface:
         self.bad_plot_text.grid(row=2, column=0, padx=(10, 0), pady=(0, 0), sticky="w")
 
         # Ajoutez le nombre de plots supprimés lors de la création
-        self.bad_plot_number_label = tk.Label(progress_current_plot_frame, text=self.config_manager.read_config(self.config_manager.config_stats).get("bad_plot_number"),
-                                              bg="#1C1C1C", fg="#BFBFBF")
+        self.bad_plot_number_label = tk.Label(progress_current_plot_frame, text=self.config_manager.read_config(self.config_manager.config_stats).get("bad_plot_number"), bg="#1C1C1C", fg="#BFBFBF")
         self.bad_plot_number_label.grid(row=2, column=1, padx=(0, 10), pady=(0, 0), sticky="w")
 
         # Crée un label pour afficher le texte le numéro du plot en cours
@@ -873,7 +869,7 @@ class Interface:
         ram_qty_var = self.config_manager.read_config(self.config_manager.config_file).get("ram_qty")
         self.ram_qty_var = tk.StringVar(value=ram_qty_var)
 
-        self.ram_qty_combobox = ttk.Combobox(input_subframe_2, textvariable=self.ram_qty_var, values=["16", "32", "64", "128", "256", "416"])
+        self.ram_qty_combobox = ttk.Combobox(input_subframe_2, textvariable=self.ram_qty_var, values=["16", "32", "64", "128", "256", "512"])
         self.ram_qty_combobox.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew")
 
         # Associez la fonction à l'événement de changement de la combobox
@@ -1143,14 +1139,17 @@ class Interface:
 
     def update_contract_config(self):
         selected_contract = self.contract_var.get()
+        # Mise à jour du fichier de configuration
         self.config_manager.update_config({"contract": selected_contract}, self.config_manager.config_file)
 
     def update_farmer_key_config(self):
         selected_farmer_key = self.farmer_key_var.get()
+        # Mise à jour du fichier de configuration
         self.config_manager.update_config({"farmer_key": selected_farmer_key}, self.config_manager.config_file)
 
     def update_compression_config(self):
         selected_compression = self.compression_var.get()
+        # Mise à jour du fichier de configuration
         self.config_manager.update_config({"compression": selected_compression}, self.config_manager.config_file)
 
     def update_ram_config(self):
@@ -1159,10 +1158,12 @@ class Interface:
 
     def update_check_plot_value_config(self):
         selected_check_plot_value = self.check_plot_value_var.get()
+        # Mise à jour du fichier de configuration
         self.config_manager.update_config({"check_plot_value": selected_check_plot_value}, self.config_manager.config_file)
 
     def update_check_threshold_config(self):
         selected_check_threshold_value = self.check_threshold_value_var.get()
+        # Mise à jour du fichier de configuration
         self.config_manager.update_config({"check_threshold_value": selected_check_threshold_value}, self.config_manager.config_file)
 
     # Define our switch function
@@ -1175,6 +1176,7 @@ class Interface:
             self.logging_button.config(image=self.logging_button_off)
             self.logging_label.config(foreground="red")
             self.plotter_gui.logs_status = "off"
+            # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"logs_status": "off"}, self.config_manager.config_file)
         else:
             # Activer la journalisation à un niveau spécifique (par exemple, INFO)
@@ -1183,6 +1185,7 @@ class Interface:
             self.logging_button.config(image=self.logging_button_on)
             self.logging_label.config(foreground="green")
             self.plotter_gui.logs_status = "on"
+            # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"logs_status": "on"}, self.config_manager.config_file)
 
     # Define our switch function
@@ -1192,6 +1195,7 @@ class Interface:
             self.check_button.config(image=self.logging_button_off)
             self.check_label.config(foreground="red")
             self.plotter_gui.check_plot_status = "off"
+            # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
             # Désactiver la Combobox
             self.check_plot_value_combobox.configure(state="disabled")
@@ -1200,6 +1204,7 @@ class Interface:
             self.check_button.config(image=self.logging_button_on)
             self.check_label.config(foreground="green")
             self.plotter_gui.check_plot_status = "on"
+            # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"check_plot_status": "on"}, self.config_manager.config_file)
             # Activer la Combobox
             self.check_plot_value_combobox.configure(state="normal")
@@ -1262,6 +1267,9 @@ class FindMethod:
         # Récupère le chemin du plotter stocké dans le fichier de configuration
         plotter_path = self.config_manager.read_config(self.config_manager.config_file).get("plotter_path")
 
+        # Construit le chemin complet de l'exécutable et normalise le chemin du fichier
+        plotter_path_join = os.path.normpath(os.path.join(plotter_path, plotter_executable))
+
         # Utilise shutil pour rechercher l'exécutable dans le PATH
         system = platform.system()
         if system == "Windows":
@@ -1276,7 +1284,7 @@ class FindMethod:
         if found_path and os.access(found_path, os.X_OK):
             return found_path
         else:
-            return plotter_path
+            return plotter_path_join
 
 
 class FFPlotterGUI:
@@ -1306,11 +1314,12 @@ class FFPlotterGUI:
         if not self.config_manager.read_config(self.config_manager.config_file).get("plotter_path"):
             plotter_path = self.find_method.find_plotter_executable()
             if plotter_path:
-                # Normalisez le chemin du fichier
+                # Normalise le chemin du fichier
                 normalized_plotter_path = os.path.normpath(plotter_path)
+                # Mise à jour du fichier de configuration
                 self.config_manager.update_config({"plotter_path": normalized_plotter_path}, self.config_manager.config_file)
 
-        # Mise à jour de l'interface utilisateur
+        # Mise à jour de l'interface graphique
         self.update_idletasks()
 
     def on_combobox_selected(self, event):
@@ -1319,14 +1328,14 @@ class FFPlotterGUI:
         if selected_executable:
             self.interface.plotter_path_combobox.delete(0, tk.END)
             self.interface.plotter_path_combobox.insert(0, selected_executable)
-
-            # Mettez à jour le fichier de configuration
+            # Mise à jour du fichier de configuration
             self.config_manager.update_config({"plotter_executable": selected_executable}, self.config_manager.config_file)
 
         # Recherche automatique et mise à jour du fichier de configuration uniquement si la valeur est vide
         if not self.config_manager.read_config(self.config_manager.config_file).get("plotter_path"):
-            # Normalisez le chemin du répertoire
+            # Normalise le chemin du répertoire
             normalized_plotter_path = os.path.normpath(self.config_manager.plotter_directory)
+            # Mise à jour du fichier de configuration
             self.config_manager.update_config({"plotter_path": normalized_plotter_path}, self.config_manager.config_file)
 
     # Menu parcourir du disque temporaire 1
@@ -1334,13 +1343,12 @@ class FFPlotterGUI:
         # Ouvre une boîte de dialogue pour sélectionner le disque temporaire -t1 (NVME/SSD)
         ssd_temp = filedialog.askdirectory(title="Sélectionnez le disque temporaire -t1 (NVME/SSD)")
         if ssd_temp:
-            # Optionnel : normalisez le chemin
+            # Normalise le chemin
             normalized_ssd_temp = os.path.normpath(ssd_temp)
-
+            # Mise à jour de l'interface graphique
             self.interface.ssd_temp_entry.delete(0, tk.END)
             self.interface.ssd_temp_entry.insert(0, normalized_ssd_temp)
-
-            # Mettez à jour le fichier de configuration
+            # Mise à jour du fichier de configuration
             self.config_manager.update_config({"ssd_temp": normalized_ssd_temp}, self.config_manager.config_file)
 
     # Menu parcourir du disque temporaire 2
@@ -1348,14 +1356,14 @@ class FFPlotterGUI:
         # Permettez à l'utilisateur de parcourir et de sélectionner le chemin du disque temporaire 2 -t2
         selected_ssd_temp2move = filedialog.askdirectory(title="Sélectionnez le disque temporaire 2 -t2")
 
-        # Optionnel : normalisez le chemin
+        # Normalise le chemin
         normalized_ssd_temp2move = os.path.normpath(selected_ssd_temp2move)
 
-        # Mettez à jour l'entrée dans l'interface utilisateur
+        # Mise à jour de l'interface graphique
         self.interface.ssd_temp2move_entry.delete(0, tk.END)
         self.interface.ssd_temp2move_entry.insert(0, normalized_ssd_temp2move)
 
-        # Mettez à jour le fichier de configuration
+        # Mise à jour du fichier de configuration
         self.config_manager.update_config({"ssd_temp2move": normalized_ssd_temp2move}, self.config_manager.config_file)
 
     # Ajout de disques de destination
@@ -1380,12 +1388,16 @@ class FFPlotterGUI:
                 # Joindre la liste mise à jour en une seule chaîne séparée par des virgules
                 updated_hdd_dirs = ",".join(hdd_dir_list)
 
-                # Mettre à jour la configuration actuelle avec la nouvelle valeur
+                # Récupère la nouvelle valeur
                 current_config["hdd_dir"] = updated_hdd_dirs
+
+                # Mise à jour du fichier de configuration
                 self.config_manager.update_config(current_config)
 
-                # Mettre à jour la liste avec les nouvelles valeurs
-                self.interface.hdd_dir_listbox.delete(0, tk.END)  # Efface la liste actuelle
+                # Efface la liste actuelle
+                self.interface.hdd_dir_listbox.delete(0, tk.END)
+
+                # Mise à jour de l'interface graphique
                 for hdd in hdd_dir_list:
                     self.interface.hdd_dir_listbox.insert(tk.END, hdd)
 
@@ -1402,16 +1414,15 @@ class FFPlotterGUI:
         # Joindre la liste mise à jour en une seule chaîne séparée par des virgules
         updated_hdd_dirs_str = ",".join(hdd_dirs)
 
-        # Enregistrez les mises à jour dans le fichier de configuration
+        # Mise à jour du fichier de configuration
         self.config_manager.update_config({"hdd_dir": updated_hdd_dirs_str}, self.config_manager.config_file)
 
-        # Effacer les éléments sélectionnés de la liste
+        # Efface la liste actuelle
         for index in reversed(selected_indices):
             self.interface.hdd_dir_listbox.delete(index)
 
-    # Valide les champs de l'interface utilisateur
     def validate_input_fields(self):
-        # Valide si tous les champs obligatoires sont remplis
+        # Valide les champs obligatoires de l'interface utilisateur
         if (
                 self.interface.check_plot_value_var.get() == "" or
                 self.interface.check_threshold_value_var.get() == "" or
@@ -1426,8 +1437,8 @@ class FFPlotterGUI:
             return False
         return True
 
-    # Récupère la taille du disque sélectionné
     def get_disk_size(self, path):
+        # Récupère la taille du disque sélectionné
         try:
             disk = psutil.disk_usage(path)
             total = disk.total
@@ -1438,14 +1449,14 @@ class FFPlotterGUI:
             self.queue_logs.log_queue_errors.put(f"Erreur lors de la récupération de la taille du disque: {e}")
             return 0, 0, 0
 
-    # Calcul le nombre de plots sur le disque sélectionné
     def calculate_max_plots_on_disk(self, hdd, compression):
+        # Calcul le nombre de plots sur le disque sélectionné
         total, used, free = self.get_disk_size(hdd)
         free_space_on_hdd = free
         return free_space_on_hdd // self.initialize_variables.plotSizes[int(compression)]
 
-    # Méthode de suppression des anciens plots
     def delete_plots(self, directory):
+        # Méthode de suppression des anciens plots
         # Obtenez la liste des fichiers de plots dans le répertoire
         files = os.listdir(directory)
 
@@ -1457,8 +1468,8 @@ class FFPlotterGUI:
 
         return plots_to_delete
 
-    # Recherche d'un disque ayant de l'espace disponible
     def find_hdd_with_space(self, hdd_dirs, compression):
+        # Recherche d'un disque ayant de l'espace disponible
         # Liste des disques de destination avec de l'espace
         hdd_dirs_with_space = [hdd for hdd in hdd_dirs if self.calculate_max_plots_on_disk(hdd, compression) > 0]
 
@@ -1503,7 +1514,7 @@ class FFPlotterGUI:
                         # Incrémente la variable de plots supprimés
                         new_deleted_plot_number = int(current_deleted_plot_number)
                         new_deleted_plot_number = new_deleted_plot_number + 1
-                        # Mise à jour de l'interface
+                        # Mise à jour de l'interface graphique
                         self.interface.deleted_plot_number_label.config(text=f"{new_deleted_plot_number}")
                         # Mise à jour du fichier de configuration
                         self.config_manager.update_config({"deleted_plot_number": new_deleted_plot_number}, self.config_manager.config_stats)
@@ -1537,8 +1548,7 @@ class FFPlotterGUI:
 
             # Récupère les valeurs des champs depuis le fichier de configuration
             compression = self.config_manager.read_config(self.config_manager.config_file).get("compression", self.config_manager.defaults["compression"])
-            plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable",
-                                                                                                      self.config_manager.defaults["plotter_executable"])
+            plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable", self.config_manager.defaults["plotter_executable"])
             plotter_path = self.config_manager.read_config(self.config_manager.config_file).get("plotter_path", self.config_manager.defaults["plotter_path"])
             ssd_temp = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp", self.config_manager.defaults["ssd_temp"])
             ssd_temp2move = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp2move", self.config_manager.defaults["ssd_temp2move"])
@@ -1640,25 +1650,46 @@ class FFPlotterGUI:
         return command
 
     def build_gigahorse_command(self, selected_hdd):
-        # Construit le chemin complet du plotter
-        plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable", self.config_manager.defaults["plotter_executable"])
-        plotter_path = self.config_manager.read_config(self.config_manager.config_file).get("plotter_path", self.config_manager.defaults["plotter_path"])
+        # Récupère le type de système
+        system = platform.system()
+
+        # Récupère les variables depuis le fichier de configuration
+        plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
+        plotter_path = self.config_manager.read_config(self.config_manager.config_file).get("plotter_path")
+        ssd_temp = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp")
+        ssd_temp2 = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp2move")
+        ram_qty_gb = float(self.config_manager.read_config(self.config_manager.config_file).get("ram_qty"))
+
+        # Construit le chemin complet de l'exécutable
         plotter_path_join = os.path.join(plotter_path, plotter_executable)
 
-        # Ajoute les arguments liés à la RAM
-        system = platform.system()
-        ram_qty_gb = float(self.config_manager.read_config(self.config_manager.config_file).get("ram_qty"))
-        # Convertir de Go en GiB
-        ram_qty_gib = ram_qty_gb * 0.93132
-        # Diviser par 2
-        ram_qty_gib_divided = math.floor(ram_qty_gib / 2)
+        # Si le système est windows
+        if system == "Windows":
+            # Ajouter un trailing slash s'il n'y en a pas déjà un
+            if not ssd_temp.endswith(os.path.sep):
+                ssd_temp += os.path.sep
 
-        ssd_temp = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp")
-        # Ajouter un trailing slash s'il n'y en a pas déjà un
-        if not ssd_temp.endswith(os.path.sep):
-            ssd_temp += os.path.sep
+            # Ajouter un trailing slash s'il n'y en a pas déjà un
+            if not ssd_temp2.endswith(os.path.sep):
+                ssd_temp2 += os.path.sep
 
-        # Construire la commande de création de plot pour bladebit_cuda
+            # Ajouter un trailing slash s'il n'y en a pas déjà un
+            if not selected_hdd.endswith(os.path.sep):
+                selected_hdd += os.path.sep
+
+            # Convertir de Go en GiB
+            ram_qty_gib = ram_qty_gb * 0.93132
+            # Diviser par 2 pour windows
+            ram_qty_gib_divided = math.floor(ram_qty_gib / 2)
+            # Défini la variable pour la ram
+            ramQty = ram_qty_gib_divided
+
+        # Sinon si le système est linux
+        else:
+            # Défini la variable pour la ram
+            ramQty = ram_qty_gb
+
+        # Construire la commande de création de plot pour gigaHorse
         command = [
             plotter_path_join,
             "-c", self.config_manager.read_config(self.config_manager.config_file).get("contract"),
@@ -1672,29 +1703,22 @@ class FFPlotterGUI:
             "-t", ssd_temp,
         ])
 
-        # Si le système est sous windows, on divise la ram
-        if system == "Windows":
-            command.extend([
-                "-M", str(ram_qty_gib_divided),
-            ])
-        else:
-            command.extend([
-                "-M", str(ram_qty_gb),
-            ])
+        # Ajoute les arguments liés à la ram
+        command.extend([
+            "-M", str(ramQty),
+        ])
 
-        # Ajoute le chemin du disque temporaire 2
-        ssd_temp2 = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp2move")
+        # Ajoute les arguments liés au disque temporaire 2
         if ssd_temp2 != "":
-            # Ajouter un trailing slash s'il n'y en a pas déjà un
-            if not ssd_temp2.endswith(os.path.sep):
-                ssd_temp2 += os.path.sep
+            # ajoute le champ à la commande
+            command.extend([
+                "-2", ssd_temp2
+            ])
 
-            command.extend(["-2", ssd_temp2])
-
-        # Ajoute le chemin du disque de destination à la commande de création de plot
-        if not selected_hdd.endswith(os.path.sep):
-            selected_hdd += os.path.sep
-        command.extend(["-d", selected_hdd])
+        # Ajoute les arguments liés au disque de destination
+        command.extend([
+            "-d", selected_hdd
+        ])
 
         return command
 
@@ -1702,8 +1726,7 @@ class FFPlotterGUI:
         # Si plotter_pid n'est pas trouvé et la variable de plots en cours de création est False
         if self.none_false_variable.plot_creation_in_progress is False:
             try:
-                plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable", self.config_manager.defaults[
-                    "plotter_executable"])
+                plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable", self.config_manager.defaults["plotter_executable"])
 
                 # Vérifie si un disque est sélectionné
                 if not selected_hdd:
@@ -1739,14 +1762,24 @@ class FFPlotterGUI:
                     setCommand = self.build_gigahorse_command(selected_hdd)
 
                 # Crée le processus en exécutant la commande
-                plotter_process = subprocess.Popen(
-                    setCommand,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    shell=False,
-                    creationflags=subprocess.CREATE_NO_WINDOW
-                )
+                system = platform.system()
+                if system == "Windows":
+                    plotter_process = subprocess.Popen(
+                        setCommand,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        shell=False,
+                        creationflags=subprocess.CREATE_NO_WINDOW
+                    )
+                else:
+                    plotter_process = subprocess.Popen(
+                        setCommand,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        shell=False,
+                    )
 
                 # Assigne le processus à la variable
                 self.none_false_variable.plotter_process = plotter_process
