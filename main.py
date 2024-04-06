@@ -545,25 +545,43 @@ class Interface:
         self.initialize_variables = ff_plotter_gui.initialize_variables
         self.static_method = ff_plotter_gui.static_method
 
+        # Récupère la valeur dans la configuration
+        plotter_directory = self.config_manager.plotter_directory
+
+        # Récupère le nom du plotter utilisé
+        current_plotter = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
+        if current_plotter is not None:
+            current_plotter_name = os.path.splitext(current_plotter)[0]
+        else:
+            # Faites quelque chose au cas où la valeur est None
+            current_plotter_name = "Unknown"
+
         # Initialisation des éléments de l'interface
         self.root = tk.Tk()
+
+        # Déterminer le système d'exploitation en cours d'exécution
+        system = platform.system()
 
         # Liste pour stocker les exécutables disponibles
         available_executables = []
 
         # Parcourir les fichiers dans le répertoire "Plotter" et normaliser les chemins
-        for file_name in os.listdir(self.config_manager.plotter_directory):
-            file_path = os.path.join(self.config_manager.plotter_directory, file_name)
-            normalized_file_path = os.path.normpath(file_path)
+        for file_name in os.listdir(plotter_directory):
+            file_path = os.path.join(plotter_directory, file_name)
+            normalized_file_path = os.path.normpath(file_path)  # Normaliser le chemin
+            # Vérifier si le fichier est un exécutable et s'il est exécutable sur le système en cours
             if os.path.isfile(normalized_file_path) and os.access(normalized_file_path, os.X_OK):
-                available_executables.append(file_name)
+                # Filtrer les exécutables compatibles avec le système en cours
+                if system == "Windows" and file_name.endswith(".exe"):
+                    available_executables.append(file_name)
+                elif system != "Windows" and not file_name.endswith(".exe"):
+                    available_executables.append(file_name)
 
         # Récupération de la correspondance
-        if self.config_manager.defaults["plotter_executable"]:
-            plotter_name = self.config_manager.defaults["plotter_executable"]
-            self.root.title(f"French Farmer Gui plotter {plotter_name}")
+        if current_plotter_name:
+            self.root.title(f"French Farmer Gui - {current_plotter_name}")
         else:
-            self.root.title("French Farmer Gui plotter")
+            self.root.title("French Farmer Gui")
 
         # Stylisation avec ttk
         style = ThemedStyle(self.root)
@@ -571,6 +589,7 @@ class Interface:
         style.configure("Custom.TLabel", background="#1C1C1C", foreground="#BFBFBF", font=("Helvetica Sans MS", 10))
         style.configure("TButton", font=("Helvetica", 9))
         style.configure("Custom.Horizontal.TProgressbar", troughcolor="#1C1C1C", background="green", thickness=10)
+        style.configure('CustomSend.TButton', background='#0792ea')
 
         # Créer une Frame globale
         main_frame = tk.Frame(self.root, bg="#2C2C2C")
@@ -621,7 +640,7 @@ class Interface:
         self.logging_button = tk.Button(inner_frame, border=0, command=self.logs_button_switch)
         self.logging_button.configure(background="#1C1C1C", activebackground="#1C1C1C", border=0)
         self.logging_button.grid(row=1, column=0, padx=(0, 0), pady=(5, 10), sticky="n")
-        self.logging_button.config(cursor="hand2", state="disabled")
+        self.logging_button.config(cursor="hand2", state="normal")
 
         # Chargez l'image dans une variable de classe spécifique pour le bouton de logging
         logging_button_off_path = self.static_method.resource_path("images/off.png")
@@ -632,11 +651,11 @@ class Interface:
 
         # Configurez le bouton de logging en fonction de la valeur de logs_status
         if self.plotter_gui.logs_status == "on":
-            self.logging_button.config(image=self.logging_button_on)
+            self.logging_button.config(image=self.logging_button_on, background="#1C1C1C")
             self.logging_label.config(foreground="#00B34D")
             self.logging_label.grid_rowconfigure(0, weight=1)
         else:
-            self.logging_button.config(image=self.logging_button_off)
+            self.logging_button.config(image=self.logging_button_off, background="#1C1C1C")
             self.logging_label.config(foreground="#FF2E2E")
             self.logging_label.grid_rowconfigure(0, weight=1)
 
@@ -645,7 +664,6 @@ class Interface:
         self.check_label.grid(row=0, column=1, padx=(0, 0), pady=(10, 5), sticky="n")
 
         self.check_button = tk.Button(inner_frame, border=0, command=self.check_button_switch)
-        self.check_button.configure(background="#1C1C1C", activebackground="#1C1C1C", border=0)
         self.check_button.grid(row=1, column=1, padx=(0, 0), pady=(5, 10), sticky="n")
         self.check_button.config(cursor="hand2")
 
@@ -656,17 +674,25 @@ class Interface:
         check_button_on_path = self.static_method.resource_path("images/on.png")
         self.check_button_on = tk.PhotoImage(file=check_button_on_path)
 
-        # Configurez le bouton de check en fonction de la valeur de check_plot_status
-        if self.plotter_gui.check_plot_status == "on":
-            self.check_button.config(image=self.check_button_on)
-            self.check_label.config(foreground="#00B34D")
-            # Ajoutez des poids pour partager la hauteur
-            self.check_label.grid_rowconfigure(0, weight=1)
+        if current_plotter_name == "bladebit_cuda":
+            # Configurez le bouton de check en fonction de la valeur de check_plot_status
+            if self.plotter_gui.check_plot_status == "on":
+                self.check_button.config(image=self.check_button_on, background="#1C1C1C")
+                self.check_label.config(foreground="#00B34D")
+                # Ajoutez des poids pour partager la hauteur
+                self.check_label.grid_rowconfigure(0, weight=1)
+            else:
+                self.check_button.config(image=self.check_button_off, background="#1C1C1C")
+                self.check_label.config(foreground="#FF2E2E")
+                # Ajoutez des poids pour partager la hauteur
+                self.check_label.grid_rowconfigure(0, weight=1)
         else:
-            self.check_button.config(image=self.check_button_off)
-            self.check_label.config(foreground="#FF2E2E")
-            # Ajoutez des poids pour partager la hauteur
-            self.check_label.grid_rowconfigure(0, weight=1)
+            self.check_button.configure(state="disabled")
+            self.check_button.config(image=self.logging_button_off, background="#1C1C1C")
+            self.check_label.config(foreground="red")
+            self.plotter_gui.check_plot_status = "off"
+            # Mise à jour du fichier de configuration
+            self.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
 
         # Créez la Frame supérieure (top_column)
         top_right_column = tk.Frame(main_frame, bg="#2C2C2C")
@@ -797,119 +823,122 @@ class Interface:
         # Assurez-vous que l'image ne soit pas collectée par le garbage collector
         logo_label.photo = input_logo_img
 
-        # Créer une sous-frame pour check_plot
+        # Créer une sous-frame pour plotter_path
         input_subframe_1 = tk.Frame(input_logo, bg="#1C1C1C")
-        input_subframe_1.grid(row=1, column=0, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="n")
+        input_subframe_1.grid(row=1, column=0, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
         input_subframe_1.columnconfigure(0, weight=1)
         input_subframe_1.columnconfigure(1, weight=1)
 
-        # Ligne 3 : check_plot
-        self.check_plot_value_label = ttk.Label(input_subframe_1, style="Custom.TLabel", text="Nombre de contrôles", anchor="center")
-        self.check_plot_value_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        # Ligne 5 : Chemin vers l'exécutable de plotter
+        self.plotter_path_label = ttk.Label(input_subframe_1, style="Custom.TLabel", text="Sélectionner le plotter", anchor="center")
+        self.plotter_path_label.grid(row=0, column=0, pady=(0, 5), padx=4, sticky="nsew", columnspan=2)
 
-        check_plot_value = self.config_manager.read_config(self.config_manager.config_file).get("check_plot_value")
-        self.check_plot_value_var = tk.StringVar(value=check_plot_value)
+        # Créer une liste déroulante avec les exécutables disponibles
+        self.plotter_path_combobox = ttk.Combobox(input_subframe_1, values=available_executables)
+        self.plotter_path_combobox.grid(row=1, column=0, pady=(0, 0), padx=4, sticky="nsew", columnspan=2)
+        self.plotter_path_combobox.bind("<<ComboboxSelected>>", self.plotter_gui.on_combobox_selected)
+        self.plotter_path_combobox.set(current_plotter)
 
-        self.check_plot_value_combobox = ttk.Combobox(input_subframe_1, textvariable=self.check_plot_value_var)
-        self.check_plot_value_combobox.grid(row=1, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
-        self.check_plot_value_combobox['values'] = ["30", "60", "100", "300", "500", "700", "1000"]
-        # Associez la fonction à l'événement de changement de la combobox
-        self.check_plot_value_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_check_plot_value_config())
-
-        # Ligne 4 : check_threshold
-        self.check_threshold_value_label = ttk.Label(input_subframe_1, style="Custom.TLabel", text="Taux de preuve en %", anchor="center")
-        self.check_threshold_value_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
-
-        check_threshold_value = self.config_manager.read_config(self.config_manager.config_file).get("check_threshold_value")
-        self.check_threshold_value_var = tk.StringVar(value=check_threshold_value)
-        self.check_threshold_value_combobox = ttk.Combobox(input_subframe_1, textvariable=self.check_threshold_value_var)
-        self.check_threshold_value_combobox.grid(row=1, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
-        self.check_threshold_value_combobox['values'] = ["80", "85", "90", "95", "100"]
-        # Associez la fonction à l'événement de changement de la combobox
-        self.check_threshold_value_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_check_threshold_config())
-
-        # Configurez le combobox de check en fonction de la valeur de check_plot_status
-        if self.plotter_gui.check_plot_status == "on":
-            # Activer la Combobox
-            self.check_plot_value_combobox.configure(state="normal")
-            self.check_threshold_value_combobox.configure(state="normal")
-        else:
-            # Désactiver la Combobox
-            self.check_plot_value_combobox.configure(state="disabled")
-            self.check_threshold_value_combobox.configure(state="disabled")
-
-        # Créer une sous-frame pour compression_label, ram_qty_label, et le reste
-        input_subframe_2: Frame = tk.Frame(input_subframe_1, bg="#1C1C1C")
+        # Créer une sous-frame pour check_plot
+        input_subframe_2 = tk.Frame(input_subframe_1, bg="#1C1C1C")
         input_subframe_2.grid(row=2, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="n")
 
         # Ajouter des poids pour partager la largeur
         input_subframe_2.columnconfigure(0, weight=1)
         input_subframe_2.columnconfigure(1, weight=1)
 
+        # Ligne 3 : check_plot
+        self.check_plot_value_label = ttk.Label(input_subframe_2, style="Custom.TLabel", text="Nombre de contrôles", anchor="center")
+        self.check_plot_value_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
+
+        check_plot_value = self.config_manager.read_config(self.config_manager.config_file).get("check_plot_value")
+        self.check_plot_value_var = tk.StringVar(value=check_plot_value)
+
+        self.check_plot_value_combobox = ttk.Combobox(input_subframe_2, textvariable=self.check_plot_value_var)
+        self.check_plot_value_combobox.grid(row=1, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.check_plot_value_combobox['values'] = ["30", "60", "100", "300", "500", "700", "1000"]
+        # Associez la fonction à l'événement de changement de la combobox
+        self.check_plot_value_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_check_plot_value_config())
+
+        # Ligne 4 : check_threshold
+        self.check_threshold_value_label = ttk.Label(input_subframe_2, style="Custom.TLabel", text="Taux de preuve en %", anchor="center")
+        self.check_threshold_value_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
+
+        check_threshold_value = self.config_manager.read_config(self.config_manager.config_file).get("check_threshold_value")
+        self.check_threshold_value_var = tk.StringVar(value=check_threshold_value)
+        self.check_threshold_value_combobox = ttk.Combobox(input_subframe_2, textvariable=self.check_threshold_value_var)
+        self.check_threshold_value_combobox.grid(row=1, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.check_threshold_value_combobox['values'] = ["80", "85", "90", "95", "100"]
+        # Associez la fonction à l'événement de changement de la combobox
+        self.check_threshold_value_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_check_threshold_config())
+
+        if current_plotter == "bladebit_cuda":
+            # Configurez le combobox de check en fonction de la valeur de check_plot_status
+            if self.plotter_gui.check_plot_status == "on":
+                # Activer la Combobox
+                self.check_plot_value_combobox.configure(state="normal")
+                self.check_threshold_value_combobox.configure(state="normal")
+            else:
+                # Désactiver la Combobox
+                self.check_plot_value_combobox.configure(state="disabled")
+                self.check_threshold_value_combobox.configure(state="disabled")
+        else:
+            self.check_plot_value_combobox.configure(state="disabled")
+            self.check_threshold_value_combobox.configure(state="disabled")
+
+        # Créer une sous-frame
+        input_subframe_3: Frame = tk.Frame(input_subframe_2, bg="#1C1C1C")
+        input_subframe_3.grid(row=3, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="n")
+
+        # Ajouter des poids pour partager la largeur
+        input_subframe_3.columnconfigure(0, weight=1)
+        input_subframe_3.columnconfigure(1, weight=1)
+
         # Ligne 1 : Taux de compression du plot
-        self.compression_label = ttk.Label(input_subframe_2, style="Custom.TLabel", text="Taux de compression", anchor="center")
+        self.compression_label = ttk.Label(input_subframe_3, style="Custom.TLabel", text="Taux de compression", anchor="center")
         self.compression_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
         # Récupérez les valeurs de compression à partir de InitializeVariables.plotSizes
-        compression_values = [str(compression) for compression in InitializeVariables().plotSizes.keys()]
-        compression = self.config_manager.read_config(self.config_manager.config_file).get("compression")
+        current_compression = self.config_manager.read_config(self.config_manager.config_file).get("compression")
+
+        # S'assurer que compress est une chaîne ou None
+        if current_compression is not None:
+            current_compression = str(current_compression)
+
+        if current_plotter_name == "bladebit_cuda":
+            # Si le plotter est bladebit, n'afficher que les compressions de 1 à 7
+            compression_values = [str(compression) for compression in range(1, 8)]
+            # Si la compression est supérieur à 9, on assigne 5 par défaut
+            compression = min(int(current_compression), 5) if current_compression and current_compression.isdigit() else 5
+            # Mise à jour du fichier de configuration
+            self.config_manager.update_config({"compression": compression}, self.config_manager.config_file)
+            ram_qty_values = ["16", "128", "256"]
+        else:
+            # Sinon, utilisez toutes les compressions disponibles
+            compression_values = [str(compression) for compression in InitializeVariables().plotSizes.keys()]
+            compression = int(current_compression) if current_compression is not None else None
+            ram_qty_values = ["16", "32", "64", "128", "256", "512"]
+
         self.compression_var = tk.StringVar(value=compression)
-        self.compression_combobox = ttk.Combobox(input_subframe_2, textvariable=self.compression_var)
+        self.compression_combobox = ttk.Combobox(input_subframe_3, textvariable=self.compression_var)
         self.compression_combobox.grid(row=1, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
         self.compression_combobox['values'] = compression_values
         # Associez la fonction à l'événement de changement de la combobox
         self.compression_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_compression_config())
 
         # Ligne 2 : Quantité de RAM
-        self.ram_qty_label = ttk.Label(input_subframe_2, style="Custom.TLabel", text="Quantité de RAM", anchor="center")
+        current_ram_qty = self.config_manager.read_config(self.config_manager.config_file).get("ram_qty")
+        self.ram_qty_label = ttk.Label(input_subframe_3, style="Custom.TLabel", text="Quantité de RAM", anchor="center")
         self.ram_qty_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
-
-        ram_qty_var = self.config_manager.read_config(self.config_manager.config_file).get("ram_qty")
-        self.ram_qty_var = tk.StringVar(value=ram_qty_var)
-
-        self.ram_qty_combobox = ttk.Combobox(input_subframe_2, textvariable=self.ram_qty_var, values=["16", "32", "64", "128", "256", "512"])
+        self.ram_qty_var = tk.StringVar(value=current_ram_qty)
+        self.ram_qty_combobox = ttk.Combobox(input_subframe_3, textvariable=self.ram_qty_var, values=ram_qty_values)
         self.ram_qty_combobox.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew")
-
         # Associez la fonction à l'événement de changement de la combobox
         self.ram_qty_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_ram_config())
 
         # Créer une sous-frame pour compression_label, ram_qty_label
-        input_subframe_3 = tk.Frame(input_subframe_2, bg="#1C1C1C")
-        input_subframe_3.grid(row=3, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
-
-        # Ajouter des poids pour partager la largeur
-        input_subframe_3.columnconfigure(0, weight=1)
-        input_subframe_3.columnconfigure(1, weight=1)
-
-        # Ligne 3 : Pool contract
-        self.contract_label = ttk.Label(input_subframe_3, style="Custom.TLabel", text="Pool contract", anchor="center")
-        self.contract_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
-
-        # Créez une variable pour stocker la valeur actuelle du contrat de pool
-        current_contract_key = self.config_manager.read_config(self.config_manager.config_file).get("contract")
-        self.contract_var = tk.StringVar(value=current_contract_key)
-        self.contract_entry = ttk.Entry(input_subframe_3, textvariable=self.contract_var)
-        self.contract_entry.grid(row=1, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
-
-        # Associez la fonction à l'événement de modification du champ d'entrée
-        self.contract_entry.bind("<FocusOut>", lambda event=None: self.update_contract_config())
-
-        # Ligne 4 : Farmer public key
-        self.farmer_key_label = ttk.Label(input_subframe_3, style="Custom.TLabel", text="Farmer public key", anchor="center")
-        self.farmer_key_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
-
-        # Créez une variable pour stocker la valeur actuelle de la clé du fermier
-        current_farmer_key = self.config_manager.read_config(self.config_manager.config_file).get("farmer_key")
-        self.farmer_key_var = tk.StringVar(value=current_farmer_key)
-        self.farmer_key_entry = ttk.Entry(input_subframe_3, textvariable=self.farmer_key_var)
-        self.farmer_key_entry.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew", columnspan=2)
-
-        # Associez la fonction à l'événement de modification du champ d'entrée
-        self.farmer_key_entry.bind("<FocusOut>", lambda event=None: self.update_farmer_key_config())
-
-        # Créer une sous-frame pour ssd_temp et ssd_temp2move
         input_subframe_4 = tk.Frame(input_subframe_3, bg="#1C1C1C")
         input_subframe_4.grid(row=4, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
 
@@ -917,11 +946,45 @@ class Interface:
         input_subframe_4.columnconfigure(0, weight=1)
         input_subframe_4.columnconfigure(1, weight=1)
 
+        # Ligne 3 : Pool contract
+        self.contract_label = ttk.Label(input_subframe_4, style="Custom.TLabel", text="Pool contract", anchor="center")
+        self.contract_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
+
+        # Créez une variable pour stocker la valeur actuelle du contrat de pool
+        current_contract_key = self.config_manager.read_config(self.config_manager.config_file).get("contract")
+        self.contract_var = tk.StringVar(value=current_contract_key)
+        self.contract_entry = ttk.Entry(input_subframe_4, textvariable=self.contract_var)
+        self.contract_entry.grid(row=1, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
+
+        # Associez la fonction à l'événement de modification du champ d'entrée
+        self.contract_entry.bind("<FocusOut>", lambda event=None: self.update_contract_config())
+
+        # Ligne 4 : Farmer public key
+        self.farmer_key_label = ttk.Label(input_subframe_4, style="Custom.TLabel", text="Farmer public key", anchor="center")
+        self.farmer_key_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
+
+        # Créez une variable pour stocker la valeur actuelle de la clé du fermier
+        current_farmer_key = self.config_manager.read_config(self.config_manager.config_file).get("farmer_key")
+        self.farmer_key_var = tk.StringVar(value=current_farmer_key)
+        self.farmer_key_entry = ttk.Entry(input_subframe_4, textvariable=self.farmer_key_var)
+        self.farmer_key_entry.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew", columnspan=2)
+
+        # Associez la fonction à l'événement de modification du champ d'entrée
+        self.farmer_key_entry.bind("<FocusOut>", lambda event=None: self.update_farmer_key_config())
+
+        # Créer une sous-frame pour ssd_temp et ssd_temp2move
+        input_subframe_5 = tk.Frame(input_subframe_4, bg="#1C1C1C")
+        input_subframe_5.grid(row=5, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
+
+        # Ajouter des poids pour partager la largeur
+        input_subframe_5.columnconfigure(0, weight=1)
+        input_subframe_5.columnconfigure(1, weight=1)
+
         # Ligne 6 : Disque temporaire -t1 (nvme/ssd)
-        self.ssd_temp_label = ttk.Label(input_subframe_4, style="Custom.TLabel", text="Disque temporaire -t1", anchor="center")
+        self.ssd_temp_label = ttk.Label(input_subframe_5, style="Custom.TLabel", text="Disque temporaire -t1", anchor="center")
         self.ssd_temp_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
-        self.ssd_temp_entry = ttk.Entry(input_subframe_4)
+        self.ssd_temp_entry = ttk.Entry(input_subframe_5)
         self.ssd_temp_entry.grid(row=1, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
 
         ssd_temp_value = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp")
@@ -930,15 +993,15 @@ class Interface:
 
         self.ssd_temp_entry.insert(0, ssd_temp_value)
 
-        self.ssd_temp_button = ttk.Button(input_subframe_4, text="Parcourir", command=self.plotter_gui.browse_ssd_temp)
+        self.ssd_temp_button = ttk.Button(input_subframe_5, text="Parcourir", command=self.plotter_gui.browse_ssd_temp)
         self.ssd_temp_button.grid(row=2, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
         self.ssd_temp_button.config(cursor="hand2")
 
         # Ligne 7 : Disque temporaire 2 -t2 (nvme/ssd/hdd - Non obligatoire)
-        self.ssd_temp2move_label = ttk.Label(input_subframe_4, style="Custom.TLabel", text="Disque temporaire -t2", anchor="center")
+        self.ssd_temp2move_label = ttk.Label(input_subframe_5, style="Custom.TLabel", text="Disque temporaire -t2", anchor="center")
         self.ssd_temp2move_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
-        self.ssd_temp2move_entry = ttk.Entry(input_subframe_4)
+        self.ssd_temp2move_entry = ttk.Entry(input_subframe_5)
         self.ssd_temp2move_entry.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew")
 
         ssd_temp2move_value = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp2move")
@@ -947,30 +1010,9 @@ class Interface:
 
         self.ssd_temp2move_entry.insert(0, ssd_temp2move_value)
 
-        self.ssd_temp2move_button = ttk.Button(input_subframe_4, text="Parcourir", command=self.plotter_gui.browse_ssd_temp2move)
+        self.ssd_temp2move_button = ttk.Button(input_subframe_5, text="Parcourir", command=self.plotter_gui.browse_ssd_temp2move)
         self.ssd_temp2move_button.grid(row=2, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew")
         self.ssd_temp2move_button.config(cursor="hand2")
-
-        # Créer une sous-frame pour plotter_path
-        input_subframe_5 = tk.Frame(input_subframe_4, bg="#1C1C1C")
-        input_subframe_5.grid(row=5, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
-
-        # Ajouter des poids pour partager la largeur
-        input_subframe_5.columnconfigure(0, weight=1)
-        input_subframe_5.columnconfigure(1, weight=1)
-
-        # Ligne 5 : Chemin vers l'exécutable de plotter
-        self.plotter_path_label = ttk.Label(input_subframe_5, style="Custom.TLabel", text="Sélectionner le plotter", anchor="center")
-        self.plotter_path_label.grid(row=0, column=0, pady=(0, 5), padx=4, sticky="nsew", columnspan=2)
-
-        # Créer une liste déroulante avec les exécutables disponibles
-        self.plotter_path_combobox = ttk.Combobox(input_subframe_5, values=available_executables)
-        self.plotter_path_combobox.grid(row=1, column=0, pady=(0, 0), padx=4, sticky="nsew", columnspan=2)
-        self.plotter_path_combobox.bind("<<ComboboxSelected>>", self.plotter_gui.on_combobox_selected)
-
-        # Défini la valeur initiale de la liste déroulante
-        existing_plotter = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
-        self.plotter_path_combobox.set(existing_plotter)
 
         # Créer une sous-frame pour hdd_dir
         input_subframe_6 = tk.Frame(input_subframe_5, bg="#1C1C1C")
@@ -1023,10 +1065,12 @@ class Interface:
         # Ligne 9 : Bouton Démarrer
         self.start_button = ttk.Button(button_frame, text="Lancer la création", command=self.plotter_gui.start_plotting, cursor="hand2")
         self.start_button.grid(row=0, column=0, pady=15, padx=5, sticky="nsew")
+        self.start_button.configure(style="CustomSend.TButton")
 
         # Ligne 10 : Bouton Arrêter
         self.stop_button = ttk.Button(button_frame, text="Fermer la fenêtre", command=self.plotter_gui.stop_or_close, cursor="hand2")
         self.stop_button.grid(row=0, column=1, pady=15, padx=5, sticky="nsew")
+        self.stop_button.configure(style="CustomSend.TButton")
 
         # Créer la deuxième colonne avec 12 lignes et 1 colonne
         right_column = tk.Frame(main_frame, bg="#565656", highlightthickness=1, highlightbackground="#565656")
@@ -1173,7 +1217,7 @@ class Interface:
             # Désactiver tous les niveaux de journalisation
             self.plotter_gui.logger.setLevel(logging.CRITICAL + 1)
 
-            self.logging_button.config(image=self.logging_button_off)
+            self.logging_button.config(image=self.logging_button_off, background="#1C1C1C")
             self.logging_label.config(foreground="red")
             self.plotter_gui.logs_status = "off"
             # Mise à jour du fichier de configuration
@@ -1182,7 +1226,7 @@ class Interface:
             # Activer la journalisation à un niveau spécifique (par exemple, INFO)
             self.plotter_gui.logger.setLevel(logging.INFO)
 
-            self.logging_button.config(image=self.logging_button_on)
+            self.logging_button.config(image=self.logging_button_on, background="#1C1C1C")
             self.logging_label.config(foreground="green")
             self.plotter_gui.logs_status = "on"
             # Mise à jour du fichier de configuration
@@ -1190,25 +1234,45 @@ class Interface:
 
     # Define our switch function
     def check_button_switch(self):
-        # Determine si l'état est "on" ou "off"
-        if self.plotter_gui.check_plot_status == "on":
-            self.check_button.config(image=self.logging_button_off)
+        # Récupère le nom du plotter utilisé
+        current_plotter = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
+
+        if current_plotter is not None:
+            current_plotter = os.path.splitext(current_plotter)[0]
+        else:
+            current_plotter = "unknown"
+
+        if current_plotter == "bladebit_cuda":
+            # Determine si l'état est "on" ou "off"
+            if self.plotter_gui.check_plot_status == "on":
+                self.check_button.config(image=self.logging_button_off, background="#1C1C1C")
+                self.check_label.config(foreground="red")
+                self.plotter_gui.check_plot_status = "off"
+                # Mise à jour du fichier de configuration
+                self.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
+                # Désactiver la Combobox
+                self.check_button.configure(state="normal")
+                self.check_plot_value_combobox.configure(state="disabled")
+                self.check_threshold_value_combobox.configure(state="disabled")
+            else:
+                self.check_button.config(image=self.logging_button_on, background="#1C1C1C")
+                self.check_label.config(foreground="green")
+                self.plotter_gui.check_plot_status = "on"
+                # Mise à jour du fichier de configuration
+                self.plotter_gui.config_manager.update_config({"check_plot_status": "on"}, self.config_manager.config_file)
+                # Activer la Combobox
+                self.check_button.configure(state="normal")
+                self.check_plot_value_combobox.configure(state="normal")
+                self.check_threshold_value_combobox.configure(state="normal")
+        else:
+            self.check_button.configure(state="disabled")
+            self.check_button.config(image=self.logging_button_off, background="#1C1C1C")
             self.check_label.config(foreground="red")
             self.plotter_gui.check_plot_status = "off"
             # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
-            # Désactiver la Combobox
             self.check_plot_value_combobox.configure(state="disabled")
             self.check_threshold_value_combobox.configure(state="disabled")
-        else:
-            self.check_button.config(image=self.logging_button_on)
-            self.check_label.config(foreground="green")
-            self.plotter_gui.check_plot_status = "on"
-            # Mise à jour du fichier de configuration
-            self.plotter_gui.config_manager.update_config({"check_plot_status": "on"}, self.config_manager.config_file)
-            # Activer la Combobox
-            self.check_plot_value_combobox.configure(state="normal")
-            self.check_threshold_value_combobox.configure(state="normal")
 
 
 class StaticMethod:
@@ -1330,6 +1394,46 @@ class FFPlotterGUI:
             self.interface.plotter_path_combobox.insert(0, selected_executable)
             # Mise à jour du fichier de configuration
             self.config_manager.update_config({"plotter_executable": selected_executable}, self.config_manager.config_file)
+
+            # Mettre à jour le titre de la fenêtre avec le nom du plotter sélectionné
+            plotter_name = os.path.splitext(selected_executable)[0]  # Récupérer le nom sans extension
+            self.interface.root.title(f"French Farmer Gui plotter {plotter_name}")
+
+            # Mise à jour des valeurs de la combobox ram_qty en fonction du plotter
+            if plotter_name == "bladebit_cuda":
+                # Activer check_plot
+                self.interface.check_button.configure(state="normal")
+                self.interface.check_button.config(image=self.interface.logging_button_on, background="#1C1C1C")
+                self.interface.check_label.config(foreground="green")
+                self.interface.check_plot_status = "on"
+                # Mise à jour du fichier de configuration
+                self.interface.plotter_gui.config_manager.update_config({"check_plot_status": "on"}, self.config_manager.config_file)
+                self.interface.check_plot_value_combobox.configure(state="normal")
+                self.interface.check_threshold_value_combobox.configure(state="normal")
+
+                # Change les listes déroulantes
+                compression = [str(compression) for compression in range(1, 8)]
+                ram_qty_values = ["16", "128", "256"]
+            else:
+                # Désactiver check_plot
+                self.interface.check_button.configure(state="disabled")
+                self.interface.check_button.config(image=self.interface.logging_button_off, background="#1C1C1C")
+                self.interface.check_label.config(foreground="red")
+                self.interface.check_plot_status = "off"
+                # Mise à jour du fichier de configuration
+                self.interface.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
+                self.interface.check_plot_value_combobox.configure(state="disabled")
+                self.interface.check_threshold_value_combobox.configure(state="disabled")
+
+                # Change les listes déroulantes
+                compression = [str(compression) for compression in InitializeVariables().plotSizes.keys()]
+                ram_qty_values = ["16", "32", "64", "128", "256", "512"]
+
+            # Assigne la liste de la combobox ram_qty en fonction du plotter sélectionné
+            self.interface.compression_combobox['values'] = compression
+
+            # Assigne la liste de la combobox compression en fonction du plotter sélectionné
+            self.interface.ram_qty_combobox['values'] = ram_qty_values
 
         # Recherche automatique et mise à jour du fichier de configuration uniquement si la valeur est vide
         if not self.config_manager.read_config(self.config_manager.config_file).get("plotter_path"):
@@ -1727,6 +1831,7 @@ class FFPlotterGUI:
         if self.none_false_variable.plot_creation_in_progress is False:
             try:
                 plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable", self.config_manager.defaults["plotter_executable"])
+                plotter_name = os.path.splitext(plotter_executable)[0]
 
                 # Vérifie si un disque est sélectionné
                 if not selected_hdd:
@@ -1756,7 +1861,7 @@ class FFPlotterGUI:
                 time.sleep(0.8)
 
                 # Appel de la commande en fonction du plotter
-                if plotter_executable == "bladebit_cuda":
+                if plotter_name == "bladebit_cuda":
                     setCommand = self.build_bladebit_cuda_command(selected_hdd)
                 else:
                     setCommand = self.build_gigahorse_command(selected_hdd)
