@@ -49,6 +49,12 @@ class FFPlotterGUI:
         self.welcome = Welcome(self)
         self.welcome.show_message()
 
+        # Chemin du répertoire où est situé le script
+        temp_path = os.path.dirname(__file__)
+
+        if os.path.exists(self.config_manager.config_file):
+            self.config_manager.update_config({"plotter_path": temp_path}, self.config_manager.config_file)
+
         # Recherche automatique et mise à jour du fichier de configuration uniquement si la valeur est vide
         if not self.config_manager.read_config(self.config_manager.config_file).get("plotter_path"):
             plotter_path = self.find_method.find_plotter_executable()
