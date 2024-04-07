@@ -1,4 +1,7 @@
-In progress...
+Work in progress...
+
+A simple graphical interface for easy plot creation using Bladebit or gigaHorse
+
 
 Tuto linux
 ```
