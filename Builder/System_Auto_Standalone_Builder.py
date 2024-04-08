@@ -4,7 +4,7 @@ import os
 
 def build_executable():
     # Chemin du répertoire contenant les fichiers
-    directory_path = os.path.dirname(os.path.dirname(__file__))
+    directory_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     # Chemin du script principal
     main_script_path = os.path.join(directory_path, "main.py")
