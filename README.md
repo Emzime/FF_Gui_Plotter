@@ -1,4 +1,10 @@
-Tuto linux
+Work in progress...
+
+A simple graphical interface for easy plot creation using Bladebit or gigaHorse
+
+![image](https://github.com/Emzime/FF_Gui_Plotter/assets/3422040/f8428fa5-27f0-4056-bed4-56c13fb698aa)
+
+Linux installation:
 ```
 git clone https://github.com/Emzime/FF_Gui_Plotter.git
 cd FF_Gui_Plotter
@@ -8,7 +14,7 @@ venv/bin/python main.py
 ```
 
 
-ou, sans venv:
+or without venv:
 ```
 pip install psutil ttkthemes
 python main.py
