@@ -9,13 +9,14 @@ Linux installation:
 git clone https://github.com/Emzime/FF_Gui_Plotter.git
 cd FF_Gui_Plotter
 python -m venv venv
-venv/bin/pip install psutil ttkthemes
-venv/bin/python main.py
-```
-
-
-or without venv:
-```
+. ./venv/bin/activate
 pip install psutil ttkthemes
 python main.py
+```
+
+Build on Linux:
+```
+. ./venv/bin/activate
+cd Builder
+python System_Auto_Folder_Builder.py
 ```
