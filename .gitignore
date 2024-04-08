@@ -1,6 +1,10 @@
 config.txt
 stats.txt
 FF_Plot_log.log
+CreateExe.txt
 venv/
 /.idea
 /Files/__pycache__
+/Builder/build/
+Builder/French Farmer Gui.spec
+Builder/dist/French Farmer Gui/French Farmer Gui.exe
