@@ -6,5 +6,5 @@ venv/
 /.idea
 /Files/__pycache__
 /Builder/build/
+/Builder/dist
 Builder/French Farmer Gui.spec
-Builder/dist/French Farmer Gui/French Farmer Gui.exe
