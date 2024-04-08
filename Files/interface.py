@@ -82,8 +82,8 @@ class Interface:
         style.theme_use("clam")
         style.configure("Custom.TLabel", background="#1C1C1C", foreground="#0792ea", font=("Helvetica Sans MS", 10))
         style.configure("TButton", font=("Helvetica", 9))
-        style.configure("Custom.Horizontal.TProgressbar", troughcolor="#1C1C1C", background="#0792ea", thickness=10)
-        style.configure('CustomSend.TButton', background='#0792ea')
+        style.configure("Custom.Horizontal.TProgressbar", troughcolor="#1C1C1C", background="#00DF03", thickness=10)
+        style.configure('CustomSend.TButton', background='#9C9C9C')
 
         # Créer une Frame globale
         main_frame = tk.Frame(self.root, bg="#2C2C2C")
@@ -150,7 +150,7 @@ class Interface:
             self.logging_label.grid_rowconfigure(0, weight=1)
         else:
             self.logging_button.config(image=self.logging_button_off, background="#1C1C1C")
-            self.logging_label.config(foreground="#E20606")
+            self.logging_label.config(foreground="#F10000")
             self.logging_label.grid_rowconfigure(0, weight=1)
 
         # Bouton on / off de plot check
@@ -178,7 +178,7 @@ class Interface:
                 self.check_label.grid_rowconfigure(0, weight=1)
             else:
                 self.check_button.config(image=self.check_button_off, background="#1C1C1C")
-                self.check_label.config(foreground="#E20606")
+                self.check_label.config(foreground="#F10000")
                 # Ajoutez des poids pour partager la hauteur
                 self.check_label.grid_rowconfigure(0, weight=1)
         else:
@@ -601,19 +601,19 @@ class Interface:
         # Ligne 11 : Journal des Erreurs
         error_label = ttk.Label(log_frame, style="Custom.TLabel", text="Journal des erreurs:", anchor="nw")
         error_label.grid(row=1, column=0, pady=(10, 1), padx=15, sticky="nw")
-        error_label.configure(background="#1C1C1C", foreground="#E20606")
+        error_label.configure(background="#1C1C1C", foreground="#F10000")
 
         self.errors_text = tk.Text(log_frame, wrap=tk.WORD, height=5, highlightthickness=1, highlightbackground="#565656")
         self.errors_text.grid(row=2, column=0, pady=(0, 5), padx=(15, 0), sticky="nsew")
-        self.errors_text.configure(bg="#2C2C2C", fg="#E20606")
+        self.errors_text.configure(bg="#2C2C2C", fg="#F10000")
 
         errors_scrollbar = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, command=self.errors_text.yview)
         errors_scrollbar.grid(row=2, column=1, pady=(0, 5), padx=(0, 15), sticky="ns")
         self.errors_text["yscrollcommand"] = errors_scrollbar.set
-        self.errors_text.tag_configure("timestamp", foreground="#CCCCCC")
-        self.errors_text.tag_configure("error", foreground="#E20606")
-        self.errors_text.tag_configure("warning", foreground="#FF8300")
-        self.errors_text.tag_configure("info", foreground="#0093FF")
+        self.errors_text.tag_configure("timestamp", foreground="#FFFFFF")
+        self.errors_text.tag_configure("error", foreground="#F10000")
+        self.errors_text.tag_configure("warning", foreground="#FF9B00")
+        self.errors_text.tag_configure("info", foreground="#0792ea")
 
         # Ligne 12 : Journal de l'application
         log_label = ttk.Label(log_frame, style="Custom.TLabel", text="Journal de l'application:", anchor="nw")
@@ -622,11 +622,11 @@ class Interface:
 
         self.log_text = tk.Text(log_frame, wrap=tk.WORD, height=10, highlightthickness=1, highlightbackground="#565656")
         self.log_text.grid(row=4, column=0, pady=(0, 5), padx=(15, 0), sticky="nsew")
-        self.log_text.configure(bg="#2C2C2C", fg="#0792ea")
-        self.log_text.tag_configure("timestamp", foreground="#CCCCCC")
-        self.log_text.tag_configure("error", foreground="#E20606")
-        self.log_text.tag_configure("warning", foreground="#FF8300")
-        self.log_text.tag_configure("info", foreground="#00B34D")
+        self.log_text.configure(bg="#2C2C2C", fg="#00DF03")
+        self.log_text.tag_configure("timestamp", foreground="#FFFFFF")
+        self.log_text.tag_configure("error", foreground="#F10000")
+        self.log_text.tag_configure("warning", foreground="#FF9B00")
+        self.log_text.tag_configure("info", foreground="#0792ea")
 
         log_scrollbar = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, command=self.log_text.yview)
         log_scrollbar.grid(row=4, column=1, pady=(0, 5), padx=(0, 15), sticky="ns")
@@ -640,10 +640,10 @@ class Interface:
         self.log_blade = tk.Text(log_frame, wrap=tk.WORD, height=10, highlightthickness=1, highlightbackground="#565656")
         self.log_blade.grid(row=6, column=0, pady=(0, 15), padx=(15, 0), sticky="nsew")
         self.log_blade.configure(bg="#2C2C2C", fg="#BFBFBF")
-        self.log_blade.tag_configure("timestamp", foreground="#BFBFBF")
-        self.log_blade.tag_configure("error", foreground="#E20606")
-        self.log_blade.tag_configure("warning", foreground="#FF8300")
-        self.log_blade.tag_configure("info", foreground="#0093FF")
+        self.log_blade.tag_configure("timestamp", foreground="#FFFFFF")
+        self.log_blade.tag_configure("error", foreground="#F10000")
+        self.log_blade.tag_configure("warning", foreground="#FF9B00")
+        self.log_blade.tag_configure("info", foreground="#0792ea")
 
         log_blade_scrollbar = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, command=self.log_blade.yview)
         log_blade_scrollbar.grid(row=6, column=1, pady=(0, 15), padx=(0, 15), sticky="ns")
@@ -723,7 +723,7 @@ class Interface:
             self.plotter_gui.logger.setLevel(logging.CRITICAL + 1)
 
             self.logging_button.config(image=self.logging_button_off, background="#1C1C1C")
-            self.logging_label.config(foreground="red")
+            self.logging_label.config(foreground="#F10000")
             self.plotter_gui.logs_status = "off"
             # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"logs_status": "off"}, self.config_manager.config_file)
@@ -732,7 +732,7 @@ class Interface:
             self.plotter_gui.logger.setLevel(logging.INFO)
 
             self.logging_button.config(image=self.logging_button_on, background="#1C1C1C")
-            self.logging_label.config(foreground="#0792ea")
+            self.logging_label.config(foreground="#00DF03")
             self.plotter_gui.logs_status = "on"
             # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"logs_status": "on"}, self.config_manager.config_file)
@@ -751,7 +751,7 @@ class Interface:
             # Determine si l'état est "on" ou "off"
             if self.plotter_gui.check_plot_status == "on":
                 self.check_button.config(image=self.logging_button_off, background="#1C1C1C")
-                self.check_label.config(foreground="red")
+                self.check_label.config(foreground="#F10000")
                 self.plotter_gui.check_plot_status = "off"
                 # Mise à jour du fichier de configuration
                 self.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
@@ -761,7 +761,7 @@ class Interface:
                 self.check_threshold_value_combobox.configure(state="disabled")
             else:
                 self.check_button.config(image=self.logging_button_on, background="#1C1C1C")
-                self.check_label.config(foreground="#0792ea")
+                self.check_label.config(foreground="#00DF03")
                 self.plotter_gui.check_plot_status = "on"
                 # Mise à jour du fichier de configuration
                 self.plotter_gui.config_manager.update_config({"check_plot_status": "on"}, self.config_manager.config_file)
@@ -772,7 +772,7 @@ class Interface:
         else:
             self.check_button.configure(state="disabled")
             self.check_button.config(image=self.logging_button_off, background="#1C1C1C")
-            self.check_label.config(foreground="red")
+            self.check_label.config(foreground="#F10000")
             self.plotter_gui.check_plot_status = "off"
             # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
