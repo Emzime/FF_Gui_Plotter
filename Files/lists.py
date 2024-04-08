@@ -1,4 +1,5 @@
 # lists.py
+import os
 
 
 class Lists:
@@ -9,12 +10,13 @@ class Lists:
         self.config_manager = ff_plotter_gui.config_manager
 
         plotter = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
+        plotter_name = os.path.splitext(plotter)[0]
 
         # Initialisation de la liste des messages de progression
         self.output_lines = []
 
         # Liste des étapes de progression à rechercher
-        if plotter == "bladebit_cuda":
+        if plotter_name == "bladebit_cuda":
             self.progress_steps = [
                 "Generating plot",
                 "Generating F1",
