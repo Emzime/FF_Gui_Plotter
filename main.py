@@ -1,5 +1,5 @@
-import math
 import logging
+import math
 import os
 import platform
 import signal
@@ -50,10 +50,11 @@ class FFPlotterGUI:
         self.welcome.show_message()
 
         # Chemin du répertoire où est situé le script
-        temp_path = os.path.dirname(__file__)
+        temp_path = os.path.dirname(os.path.abspath(__file__))
+        plotter_temp_path = os.path.join(temp_path, "Plotter")
 
         if os.path.exists(self.config_manager.config_file):
-            self.config_manager.update_config({"plotter_path": temp_path}, self.config_manager.config_file)
+            self.config_manager.update_config({"plotter_path": plotter_temp_path}, self.config_manager.config_file)
 
         # Recherche automatique et mise à jour du fichier de configuration uniquement si la valeur est vide
         if not self.config_manager.read_config(self.config_manager.config_file).get("plotter_path"):
@@ -81,16 +82,20 @@ class FFPlotterGUI:
             self.interface.root.title(f"French Farmer Gui plotter {plotter_name}")
 
             # Mise à jour des valeurs de la combobox ram_qty en fonction du plotter
-            if plotter_name == "bladebit_cuda" or plotter_name.startswith("bladebit-cuda"):
+            if plotter_name.startswith("bladebit"):
                 # Activer check_plot
                 self.interface.check_button.configure(state="normal")
                 self.interface.check_button.config(image=self.interface.logging_button_on, background="#1C1C1C")
                 self.interface.check_label.config(foreground="#0792ea")
                 self.interface.check_plot_status = "on"
-                # Mise à jour du fichier de configuration
-                self.interface.plotter_gui.config_manager.update_config({"check_plot_status": "on"}, self.config_manager.config_file)
+
+                # Mise à jour de l'interface
+                self.interface.ssd_temp2move_label.config(text="Disque temporaire -2")
                 self.interface.check_plot_value_combobox.configure(state="normal")
                 self.interface.check_threshold_value_combobox.configure(state="normal")
+
+                # Mise à jour du fichier de configuration
+                self.interface.plotter_gui.config_manager.update_config({"check_plot_status": "on"}, self.config_manager.config_file)
 
                 # Change les listes déroulantes
                 compression = [str(compression) for compression in range(1, 8)]
@@ -101,10 +106,21 @@ class FFPlotterGUI:
                 self.interface.check_button.config(image=self.interface.logging_button_off, background="#1C1C1C")
                 self.interface.check_label.config(foreground="red")
                 self.interface.check_plot_status = "off"
-                # Mise à jour du fichier de configuration
-                self.interface.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
+
+                # Récupère la quantité de mémoire
+                current_ram_qty = self.config_manager.read_config(self.config_manager.config_file).get("ram_qty")
+
+                # Mise à jour de l'interface
+                if int(current_ram_qty) == 128:
+                    self.interface.ssd_temp2move_label.config(text="Disque temporaire -2")
+                elif int(current_ram_qty) < 128:
+                    self.interface.ssd_temp2move_label.config(text="Disque temporaire -3")
+
                 self.interface.check_plot_value_combobox.configure(state="disabled")
                 self.interface.check_threshold_value_combobox.configure(state="disabled")
+
+                # Mise à jour du fichier de configuration
+                self.interface.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
 
                 # Change les listes déroulantes
                 compression = [str(compression) for compression in InitializeVariables().plotSizes.keys()]
@@ -440,6 +456,8 @@ class FFPlotterGUI:
 
         # Récupère les variables depuis le fichier de configuration
         plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
+        # Récupérer le nom sans extension
+        plotter_name = os.path.splitext(plotter_executable)[0]
         plotter_path = self.config_manager.read_config(self.config_manager.config_file).get("plotter_path")
         ssd_temp = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp")
         ssd_temp2 = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp2move")
@@ -448,31 +466,17 @@ class FFPlotterGUI:
         # Construit le chemin complet de l'exécutable
         plotter_path_join = os.path.join(plotter_path, plotter_executable)
 
-        # Si le système est windows
-        if system == "Windows":
-            # Ajouter un trailing slash s'il n'y en a pas déjà un
-            if not ssd_temp.endswith(os.path.sep):
-                ssd_temp += os.path.sep
+        # Ajouter un trailing slash s'il n'y en a pas déjà un à -t
+        if not ssd_temp.endswith(os.path.sep):
+            ssd_temp += os.path.sep
 
-            # Ajouter un trailing slash s'il n'y en a pas déjà un
-            if not ssd_temp2.endswith(os.path.sep):
-                ssd_temp2 += os.path.sep
+        # Ajouter un trailing slash s'il n'y en a pas déjà un à -2
+        if not ssd_temp2.endswith(os.path.sep):
+            ssd_temp2 += os.path.sep
 
-            # Ajouter un trailing slash s'il n'y en a pas déjà un
-            if not selected_hdd.endswith(os.path.sep):
-                selected_hdd += os.path.sep
-
-            # Convertir de Go en GiB
-            ram_qty_gib = ram_qty_gb * 0.93132
-            # Diviser par 2 pour windows
-            ram_qty_gib_divided = math.floor(ram_qty_gib / 2)
-            # Défini la variable pour la ram
-            ramQty = ram_qty_gib_divided
-
-        # Sinon si le système est linux
-        else:
-            # Défini la variable pour la ram
-            ramQty = ram_qty_gb
+        # Ajouter un trailing slash s'il n'y en a pas déjà un à -d
+        if not selected_hdd.endswith(os.path.sep):
+            selected_hdd += os.path.sep
 
         # Construire la commande de création de plot pour gigaHorse
         command = [
@@ -488,17 +492,40 @@ class FFPlotterGUI:
             "-t", ssd_temp,
         ])
 
-        # Ajoute les arguments liés à la ram
-        command.extend([
-            "-M", str(ramQty),
-        ])
+        # Si le système est windows
+        if system == "Windows":
+            # Convertir de Go en GiB
+            ram_qty_gib = ram_qty_gb * 0.93132
+            # Diviser par 2 pour windows
+            ram_qty_gib_divided = math.floor(ram_qty_gib / 2)
+            # Défini la variable pour la ram
+            ramQty = ram_qty_gib_divided
+
+            # Ajoute les arguments liés à la ram pour windows
+            # if ram_qty_gb == 128:
+            command.extend([
+                "-M", str(int(ramQty)),
+            ])
 
         # Ajoute les arguments liés au disque temporaire 2
         if ssd_temp2 != "":
-            # ajoute le champ à la commande
-            command.extend([
-                "-2", ssd_temp2
-            ])
+            # Modifier le disque temporaire utilisé selon la quantité de RAM sélectionnée
+            if plotter_name.startswith("cuda_plot_"):
+                if ram_qty_gb == 128:
+                    # ajoute le champ à la commande
+                    command.extend([
+                        "-2", ssd_temp2
+                    ])
+                elif ram_qty_gb < 128:
+                    # Ajoute le champ à la commande
+                    command.extend([
+                        "-3", ssd_temp2
+                    ])
+            elif plotter_name.startswith("bladebit"):
+                # ajoute le champ à la commande
+                command.extend([
+                    "-2", ssd_temp2
+                ])
 
         # Ajoute les arguments liés au disque de destination
         command.extend([

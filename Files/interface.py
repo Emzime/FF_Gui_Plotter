@@ -169,7 +169,7 @@ class Interface:
         check_button_on_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "on.png"))
         self.check_button_on = tk.PhotoImage(file=check_button_on_path)
 
-        if current_plotter_name == "bladebit_cuda" or current_plotter_name.startswith("bladebit-cuda"):
+        if current_plotter_name.startswith("bladebit"):
             # Configurez le bouton de check en fonction de la valeur de check_plot_status
             if self.plotter_gui.check_plot_status == "on":
                 self.check_button.config(image=self.check_button_on, background="#1C1C1C")
@@ -321,57 +321,57 @@ class Interface:
         logo_label.photo = input_logo_img
 
         # Créer une sous-frame pour plotter_path
-        input_subframe_1 = tk.Frame(input_logo, bg="#1C1C1C")
-        input_subframe_1.grid(row=1, column=0, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.input_subframe_1 = tk.Frame(input_logo, bg="#1C1C1C")
+        self.input_subframe_1.grid(row=1, column=0, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
-        input_subframe_1.columnconfigure(0, weight=1)
-        input_subframe_1.columnconfigure(1, weight=1)
+        self.input_subframe_1.columnconfigure(0, weight=1)
+        self.input_subframe_1.columnconfigure(1, weight=1)
 
         # Ligne 5 : Chemin vers l'exécutable de plotter
-        self.plotter_path_label = ttk.Label(input_subframe_1, style="Custom.TLabel", text="Sélectionner le plotter", anchor="center")
+        self.plotter_path_label = ttk.Label(self.input_subframe_1, style="Custom.TLabel", text="Sélectionner le plotter", anchor="center")
         self.plotter_path_label.grid(row=0, column=0, pady=(0, 5), padx=4, sticky="nsew", columnspan=2)
 
         # Créer une liste déroulante avec les exécutables disponibles
-        self.plotter_path_combobox = ttk.Combobox(input_subframe_1, values=available_executables)
+        self.plotter_path_combobox = ttk.Combobox(self.input_subframe_1, values=available_executables)
         self.plotter_path_combobox.grid(row=1, column=0, pady=(0, 0), padx=4, sticky="nsew", columnspan=2)
         self.plotter_path_combobox.bind("<<ComboboxSelected>>", self.plotter_gui.on_combobox_selected)
         self.plotter_path_combobox.set(current_plotter)
 
         # Créer une sous-frame pour check_plot
-        input_subframe_2 = tk.Frame(input_subframe_1, bg="#1C1C1C")
-        input_subframe_2.grid(row=2, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="n")
+        self.input_subframe_2 = tk.Frame(self.input_subframe_1, bg="#1C1C1C")
+        self.input_subframe_2.grid(row=2, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="n")
 
         # Ajouter des poids pour partager la largeur
-        input_subframe_2.columnconfigure(0, weight=1)
-        input_subframe_2.columnconfigure(1, weight=1)
+        self.input_subframe_2.columnconfigure(0, weight=1)
+        self.input_subframe_2.columnconfigure(1, weight=1)
 
         # Ligne 3 : check_plot
-        self.check_plot_value_label = ttk.Label(input_subframe_2, style="Custom.TLabel", text="Nombre de contrôles", anchor="center")
+        self.check_plot_value_label = ttk.Label(self.input_subframe_2, style="Custom.TLabel", text="Nombre de contrôles", anchor="center")
         self.check_plot_value_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
         check_plot_value = self.config_manager.read_config(self.config_manager.config_file).get("check_plot_value")
         self.check_plot_value_var = tk.StringVar(value=check_plot_value)
 
-        self.check_plot_value_combobox = ttk.Combobox(input_subframe_2, textvariable=self.check_plot_value_var)
+        self.check_plot_value_combobox = ttk.Combobox(self.input_subframe_2, textvariable=self.check_plot_value_var)
         self.check_plot_value_combobox.grid(row=1, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
         self.check_plot_value_combobox['values'] = ["30", "60", "100", "300", "500", "700", "1000"]
         # Associez la fonction à l'événement de changement de la combobox
         self.check_plot_value_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_check_plot_value_config())
 
         # Ligne 4 : check_threshold
-        self.check_threshold_value_label = ttk.Label(input_subframe_2, style="Custom.TLabel", text="Taux de preuve en %", anchor="center")
+        self.check_threshold_value_label = ttk.Label(self.input_subframe_2, style="Custom.TLabel", text="Taux de preuve en %", anchor="center")
         self.check_threshold_value_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
         check_threshold_value = self.config_manager.read_config(self.config_manager.config_file).get("check_threshold_value")
         self.check_threshold_value_var = tk.StringVar(value=check_threshold_value)
-        self.check_threshold_value_combobox = ttk.Combobox(input_subframe_2, textvariable=self.check_threshold_value_var)
+        self.check_threshold_value_combobox = ttk.Combobox(self.input_subframe_2, textvariable=self.check_threshold_value_var)
         self.check_threshold_value_combobox.grid(row=1, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
         self.check_threshold_value_combobox['values'] = ["80", "85", "90", "95", "100"]
         # Associez la fonction à l'événement de changement de la combobox
         self.check_threshold_value_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_check_threshold_config())
 
-        if current_plotter_name == "bladebit_cuda" or current_plotter_name.startswith("bladebit-cuda"):
+        if current_plotter_name.startswith("bladebit"):
             # Configurez le combobox de check en fonction de la valeur de check_plot_status
             if self.plotter_gui.check_plot_status == "on":
                 # Activer la Combobox
@@ -386,15 +386,15 @@ class Interface:
             self.check_threshold_value_combobox.configure(state="disabled")
 
         # Créer une sous-frame
-        input_subframe_3: Frame = tk.Frame(input_subframe_2, bg="#1C1C1C")
-        input_subframe_3.grid(row=3, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="n")
+        self.input_subframe_3: Frame = tk.Frame(self.input_subframe_2, bg="#1C1C1C")
+        self.input_subframe_3.grid(row=3, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="n")
 
         # Ajouter des poids pour partager la largeur
-        input_subframe_3.columnconfigure(0, weight=1)
-        input_subframe_3.columnconfigure(1, weight=1)
+        self.input_subframe_3.columnconfigure(0, weight=1)
+        self.input_subframe_3.columnconfigure(1, weight=1)
 
         # Ligne 1 : Taux de compression du plot
-        self.compression_label = ttk.Label(input_subframe_3, style="Custom.TLabel", text="Taux de compression", anchor="center")
+        self.compression_label = ttk.Label(self.input_subframe_3, style="Custom.TLabel", text="Taux de compression", anchor="center")
         self.compression_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
         # Récupérez les valeurs de compression à partir de InitializeVariables.plotSizes
@@ -404,7 +404,7 @@ class Interface:
         if current_compression is not None:
             current_compression = str(current_compression)
 
-        if current_plotter_name == "bladebit_cuda" or current_plotter_name.startswith("bladebit-cuda"):
+        if current_plotter_name.startswith("bladebit"):
             # Si le plotter est bladebit, n'afficher que les compressions de 1 à 7
             compression_values = [str(compression) for compression in range(1, 8)]
             # Si la compression est supérieur à 9, on assigne 5 par défaut
@@ -419,7 +419,7 @@ class Interface:
             ram_qty_values = ["16", "32", "64", "128", "256", "512"]
 
         self.compression_var = tk.StringVar(value=compression)
-        self.compression_combobox = ttk.Combobox(input_subframe_3, textvariable=self.compression_var)
+        self.compression_combobox = ttk.Combobox(self.input_subframe_3, textvariable=self.compression_var)
         self.compression_combobox.grid(row=1, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
         self.compression_combobox['values'] = compression_values
         # Associez la fonction à l'événement de changement de la combobox
@@ -427,61 +427,61 @@ class Interface:
 
         # Ligne 2 : Quantité de RAM
         current_ram_qty = self.config_manager.read_config(self.config_manager.config_file).get("ram_qty")
-        self.ram_qty_label = ttk.Label(input_subframe_3, style="Custom.TLabel", text="Quantité de RAM", anchor="center")
+        self.ram_qty_label = ttk.Label(self.input_subframe_3, style="Custom.TLabel", text="Quantité de RAM", anchor="center")
         self.ram_qty_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
         self.ram_qty_var = tk.StringVar(value=current_ram_qty)
-        self.ram_qty_combobox = ttk.Combobox(input_subframe_3, textvariable=self.ram_qty_var, values=ram_qty_values)
+        self.ram_qty_combobox = ttk.Combobox(self.input_subframe_3, textvariable=self.ram_qty_var, values=ram_qty_values)
         self.ram_qty_combobox.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew")
         # Associez la fonction à l'événement de changement de la combobox
         self.ram_qty_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_ram_config())
 
         # Créer une sous-frame pour compression_label, ram_qty_label
-        input_subframe_4 = tk.Frame(input_subframe_3, bg="#1C1C1C")
-        input_subframe_4.grid(row=4, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
+        self.input_subframe_4 = tk.Frame(self.input_subframe_3, bg="#1C1C1C")
+        self.input_subframe_4.grid(row=4, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
-        input_subframe_4.columnconfigure(0, weight=1)
-        input_subframe_4.columnconfigure(1, weight=1)
+        self.input_subframe_4.columnconfigure(0, weight=1)
+        self.input_subframe_4.columnconfigure(1, weight=1)
 
         # Ligne 3 : Pool contract
-        self.contract_label = ttk.Label(input_subframe_4, style="Custom.TLabel", text="Pool contract", anchor="center")
+        self.contract_label = ttk.Label(self.input_subframe_4, style="Custom.TLabel", text="Pool contract", anchor="center")
         self.contract_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
         # Créez une variable pour stocker la valeur actuelle du contrat de pool
         current_contract_key = self.config_manager.read_config(self.config_manager.config_file).get("contract")
         self.contract_var = tk.StringVar(value=current_contract_key)
-        self.contract_entry = ttk.Entry(input_subframe_4, textvariable=self.contract_var)
+        self.contract_entry = ttk.Entry(self.input_subframe_4, textvariable=self.contract_var)
         self.contract_entry.grid(row=1, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
 
         # Associez la fonction à l'événement de modification du champ d'entrée
         self.contract_entry.bind("<FocusOut>", lambda event=None: self.update_contract_config())
 
         # Ligne 4 : Farmer public key
-        self.farmer_key_label = ttk.Label(input_subframe_4, style="Custom.TLabel", text="Farmer public key", anchor="center")
+        self.farmer_key_label = ttk.Label(self.input_subframe_4, style="Custom.TLabel", text="Farmer public key", anchor="center")
         self.farmer_key_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
         # Créez une variable pour stocker la valeur actuelle de la clé du fermier
         current_farmer_key = self.config_manager.read_config(self.config_manager.config_file).get("farmer_key")
         self.farmer_key_var = tk.StringVar(value=current_farmer_key)
-        self.farmer_key_entry = ttk.Entry(input_subframe_4, textvariable=self.farmer_key_var)
+        self.farmer_key_entry = ttk.Entry(self.input_subframe_4, textvariable=self.farmer_key_var)
         self.farmer_key_entry.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew", columnspan=2)
 
         # Associez la fonction à l'événement de modification du champ d'entrée
         self.farmer_key_entry.bind("<FocusOut>", lambda event=None: self.update_farmer_key_config())
 
         # Créer une sous-frame pour ssd_temp et ssd_temp2move
-        input_subframe_5 = tk.Frame(input_subframe_4, bg="#1C1C1C")
-        input_subframe_5.grid(row=5, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
+        self.input_subframe_5 = tk.Frame(self.input_subframe_4, bg="#1C1C1C")
+        self.input_subframe_5.grid(row=5, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
-        input_subframe_5.columnconfigure(0, weight=1)
-        input_subframe_5.columnconfigure(1, weight=1)
+        self.input_subframe_5.columnconfigure(0, weight=1)
+        self.input_subframe_5.columnconfigure(1, weight=1)
 
         # Ligne 6 : Disque temporaire -t1 (nvme/ssd)
-        self.ssd_temp_label = ttk.Label(input_subframe_5, style="Custom.TLabel", text="Disque temporaire -t1", anchor="center")
+        self.ssd_temp_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire -t", anchor="center")
         self.ssd_temp_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
-        self.ssd_temp_entry = ttk.Entry(input_subframe_5)
+        self.ssd_temp_entry = ttk.Entry(self.input_subframe_5)
         self.ssd_temp_entry.grid(row=1, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
 
         ssd_temp_value = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp")
@@ -490,15 +490,23 @@ class Interface:
 
         self.ssd_temp_entry.insert(0, ssd_temp_value)
 
-        self.ssd_temp_button = ttk.Button(input_subframe_5, text="Parcourir", command=self.plotter_gui.browse_ssd_temp)
+        self.ssd_temp_button = ttk.Button(self.input_subframe_5, text="Parcourir", command=self.plotter_gui.browse_ssd_temp)
         self.ssd_temp_button.grid(row=2, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
         self.ssd_temp_button.config(cursor="hand2")
 
-        # Ligne 7 : Disque temporaire 2 -t2 (nvme/ssd/hdd - Non obligatoire)
-        self.ssd_temp2move_label = ttk.Label(input_subframe_5, style="Custom.TLabel", text="Disque temporaire -t2", anchor="center")
+        # Ligne 7 : Disque temporaire 2
+        self.ssd_temp2move_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire 2", anchor="center")
+        if current_plotter_name.startswith("cuda_plot_"):
+            if int(current_ram_qty) == 128:
+                self.ssd_temp2move_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire -2", anchor="center")
+            elif int(current_ram_qty) < 128:
+                self.ssd_temp2move_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire -3", anchor="center")
+        elif current_plotter_name.startswith("bladebit"):
+            self.ssd_temp2move_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire -2", anchor="center")
+
         self.ssd_temp2move_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
 
-        self.ssd_temp2move_entry = ttk.Entry(input_subframe_5)
+        self.ssd_temp2move_entry = ttk.Entry(self.input_subframe_5)
         self.ssd_temp2move_entry.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew")
 
         ssd_temp2move_value = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp2move")
@@ -507,25 +515,25 @@ class Interface:
 
         self.ssd_temp2move_entry.insert(0, ssd_temp2move_value)
 
-        self.ssd_temp2move_button = ttk.Button(input_subframe_5, text="Parcourir", command=self.plotter_gui.browse_ssd_temp2move)
+        self.ssd_temp2move_button = ttk.Button(self.input_subframe_5, text="Parcourir", command=self.plotter_gui.browse_ssd_temp2move)
         self.ssd_temp2move_button.grid(row=2, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew")
         self.ssd_temp2move_button.config(cursor="hand2")
         if int(current_ram_qty) >= 256:
             self.ssd_temp2move_button.configure(state="disabled")
 
         # Créer une sous-frame pour hdd_dir
-        input_subframe_6 = tk.Frame(input_subframe_5, bg="#1C1C1C")
-        input_subframe_6.grid(row=6, column=0, columnspan=2, padx=0, pady=(20, 30), sticky="nsew")
+        self.input_subframe_6 = tk.Frame(self.input_subframe_5, bg="#1C1C1C")
+        self.input_subframe_6.grid(row=6, column=0, columnspan=2, padx=0, pady=(20, 30), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
-        input_subframe_6.columnconfigure(0, weight=1)
-        input_subframe_6.columnconfigure(1, weight=1)
+        self.input_subframe_6.columnconfigure(0, weight=1)
+        self.input_subframe_6.columnconfigure(1, weight=1)
 
         # Ligne 8 : Dossier de destination -d
-        self.hdd_dir_label = ttk.Label(input_subframe_6, style="Custom.TLabel", text="Dossier de destination -d", anchor="center")
+        self.hdd_dir_label = ttk.Label(self.input_subframe_6, style="Custom.TLabel", text="Dossier de destination -d", anchor="center")
         self.hdd_dir_label.grid(row=0, column=0, pady=(0, 5), padx=5, sticky="nsew", columnspan=2)
 
-        self.hdd_dir_listbox = tk.Listbox(input_subframe_6, selectmode=tk.MULTIPLE, height=4)
+        self.hdd_dir_listbox = tk.Listbox(self.input_subframe_6, selectmode=tk.MULTIPLE, height=4)
         self.hdd_dir_listbox.grid(row=1, column=0, pady=(0, 0), padx=5, sticky="nsew", columnspan=2)
 
         hdd_dir_value = self.config_manager.read_config(self.config_manager.config_file).get("hdd_dir", "")
@@ -534,7 +542,7 @@ class Interface:
             self.hdd_dir_listbox.insert(tk.END, directory)
 
         # Utiliser une Frame pour les boutons Ajouter et Supprimer
-        button_frame = tk.Frame(input_subframe_6, bg="#1C1C1C")
+        button_frame = tk.Frame(self.input_subframe_6, bg="#1C1C1C")
         button_frame.grid(row=2, column=0, columnspan=2, pady=0, padx=5, sticky="nsew")
 
         # Ajouter des poids pour partager la largeur entre les boutons
@@ -697,13 +705,33 @@ class Interface:
 
     def update_ram_config(self):
         selected_ram_qty = self.ram_qty_var.get()
-        # Si la mémoire sélectionnée est supérieur à 128Go, on grise le bouton du disque temporaire 2
+        # Récupère les variables depuis le fichier de configuration
+        plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
+        # Récupérer le nom sans extension
+        plotter_name = os.path.splitext(plotter_executable)[0]
+
+        # Si la mémoire sélectionnée est supérieure ou égale à 256Go, on grise le bouton du disque temporaire 2
         if int(selected_ram_qty) >= 256:
             self.ssd_temp2move_button.configure(state="disabled")
         else:
             self.ssd_temp2move_button.configure(state="normal")
+
         # Mise à jour du fichier de configuration
         self.config_manager.update_config({"ram_qty": selected_ram_qty}, self.config_manager.config_file)
+
+        label_text = "Disque temporaire -2"
+
+        # Modifier le texte du label selon la quantité de RAM sélectionnée
+        if plotter_name.startswith("cuda_plot_"):
+            if int(selected_ram_qty) == 128:
+                label_text = "Disque temporaire -2"
+            elif int(selected_ram_qty) < 128:
+                label_text = "Disque temporaire -3"
+        else:
+            label_text = "Disque temporaire -2"
+
+        # Mise à jour du texte du label
+        self.ssd_temp2move_label.config(text=label_text)
 
     def update_check_plot_value_config(self):
         selected_check_plot_value = self.check_plot_value_var.get()

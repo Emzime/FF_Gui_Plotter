@@ -8,7 +8,7 @@ class ConfigManager:
     config_stats = "stats.txt"
 
     # Chemin du répertoire où est situé le script
-    directory_path = os.path.dirname(os.path.dirname(__file__))
+    directory_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     plotter_directory = os.path.join(directory_path, "Plotter")
 
     def __init__(self):

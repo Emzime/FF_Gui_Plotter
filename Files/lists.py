@@ -16,7 +16,7 @@ class Lists:
         self.output_lines = []
 
         # Liste des étapes de progression à rechercher
-        if plotter_name == "bladebit_cuda":
+        if plotter_name.startswith("bladebit"):
             self.progress_steps = [
                 "Generating plot",
                 "Generating F1",
