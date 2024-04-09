@@ -26,7 +26,12 @@ class ConfigManager:
             "logs_status": "off",
             "check_plot_status": "off",
             "check_plot_value": "30",
-            "check_threshold_value": "80"
+            "check_threshold_value": "80",
+            "gpu_1": "0",
+            "gpu_2": "",
+            "max_tmp_cache": "",
+            "parallel_copies": "1",
+            "copy_limit": "1"
         }
 
         self.stats = {
