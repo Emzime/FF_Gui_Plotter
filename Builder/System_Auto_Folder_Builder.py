@@ -20,6 +20,7 @@ def build_executable():
     files_to_add_windows = [
         ("Images/FF-icon.ico", "Images/"),
         ("Images/logo.png", "Images/"),
+        ("Images/discord.png", "Images/"),
         ("Images/off.png", "Images/"),
         ("Images/on.png", "Images/"),
         ("Files/config_manager.py", "Files/"),
@@ -44,6 +45,7 @@ def build_executable():
     files_to_add_linux = [
         ("Images/FF-icon.ico", "Images/"),
         ("Images/logo.png", "Images/"),
+        ("Images/discord.png", "Images/"),
         ("Images/off.png", "Images/"),
         ("Images/on.png", "Images/"),
         ("Files/config_manager.py", "Files/"),
