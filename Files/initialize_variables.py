@@ -5,7 +5,7 @@ class InitializeVariables:
     def __init__(self):
         # Taille d'un plot par compression
         self.plotSizes = {
-            0: 109000000000,
+            # 0: 109000000000,
             1: 90409061581,
             2: 88691074663,
             3: 86973087744,

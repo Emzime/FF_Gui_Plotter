@@ -97,5 +97,11 @@ class Lists:
             self.interface.plotter_path_combobox,
             self.interface.hdd_dir_listbox,
             self.interface.add_hdd_dir_button,
-            self.interface.remove_hdd_dir_button
+            self.interface.remove_hdd_dir_button,
+            self.interface.gpu_1_combobox,
+            self.interface.gpu_2_combobox,
+            self.interface.waitforcopy_combobox,
+            self.interface.maxtmp_combobox,
+            self.interface.copylimit_combobox,
+            self.interface.maxcopy_combobox
         ]

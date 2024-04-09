@@ -1,3 +1,4 @@
+# main.py
 import logging
 import math
 import os
@@ -123,8 +124,17 @@ class FFPlotterGUI:
                 self.interface.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
 
                 # Change les listes déroulantes
-                compression = [str(compression) for compression in InitializeVariables().plotSizes.keys()]
-                ram_qty_values = ["16", "32", "64", "128", "256", "512"]
+                if plotter_name == "cuda_plot_k32":
+                    # Générer la liste des compressions de 1 à 20
+                    compression = [str(compression) for compression in range(1, 21)]
+                    # Retirer la valeur 10 de la liste des compressions si elle est présente
+                    if '10' in compression:
+                        compression.remove('10')
+                    ram_qty_values = ["16", "32", "64", "128", "256", "512"]
+                else:
+                    # Si le plotter est bladebit, n'afficher que les compressions de 29 à 33
+                    compression = [str(compression) for compression in range(29, 34)]
+                    ram_qty_values = ["16", "32", "64", "128", "256", "512"]
 
             # Assigne la liste de la combobox ram_qty en fonction du plotter sélectionné
             self.interface.compression_combobox['values'] = compression
@@ -462,6 +472,12 @@ class FFPlotterGUI:
         ssd_temp = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp")
         ssd_temp2 = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp2move")
         ram_qty_gb = float(self.config_manager.read_config(self.config_manager.config_file).get("ram_qty"))
+        gpu_1_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_1", "0"))
+        gpu_2_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_2", ""))
+        maxtmp_value = str(self.config_manager.read_config(self.config_manager.config_file).get("maxtmp", ""))
+        copylimit_value = str(self.config_manager.read_config(self.config_manager.config_file).get("copylimit", ""))
+        maxcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("maxcopy", ""))
+        waitforcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("waitforcopy", ""))
 
         # Construit le chemin complet de l'exécutable
         plotter_path_join = os.path.join(plotter_path, plotter_executable)
@@ -486,6 +502,42 @@ class FFPlotterGUI:
             "-n", str(self.initialize_variables.max_plots_on_selected_hdd),
             "-C", self.config_manager.read_config(self.config_manager.config_file).get("compression"),
         ]
+
+        # Ajoute les arguments liés au GPU 1
+        if gpu_1_value:
+            command.extend([
+                "-g", gpu_1_value,
+            ])
+
+        # Ajoute les arguments liés au GPU 2
+        if gpu_2_value:
+            command.extend([
+                "-g", gpu_2_value,
+            ])
+
+        # Ajoute les arguments liés -Q
+        if maxtmp_value:
+            command.extend([
+                "-Q", maxtmp_value,
+            ])
+
+        # Ajoute les arguments liés -A
+        if copylimit_value:
+            command.extend([
+                "-A", copylimit_value,
+            ])
+
+        # Ajoute les arguments liés -W
+        if maxcopy_value:
+            command.extend([
+                "-W", maxcopy_value,
+            ])
+
+        # Ajoute les arguments liés -w
+        if waitforcopy_value == "on":
+            command.extend([
+                "-w", waitforcopy_value,
+            ])
 
         # Ajoute les arguments liés au disque temporaire
         command.extend([
@@ -514,17 +566,17 @@ class FFPlotterGUI:
                 if ram_qty_gb == 128:
                     # ajoute le champ à la commande
                     command.extend([
-                        "-2", ssd_temp2
+                        "-2", ssd_temp2,
                     ])
                 elif ram_qty_gb < 128:
                     # Ajoute le champ à la commande
                     command.extend([
-                        "-3", ssd_temp2
+                        "-3", ssd_temp2,
                     ])
             elif plotter_name.startswith("bladebit"):
                 # ajoute le champ à la commande
                 command.extend([
-                    "-2", ssd_temp2
+                    "-2", ssd_temp2,
                 ])
 
         # Ajoute les arguments liés au disque de destination
@@ -757,6 +809,12 @@ class FFPlotterGUI:
                     self.interface.start_button.config(state="normal")
                     for element in self.lists.check_plot_elements_disable:
                         element.config(state="normal")
+
+                    # Désactiver le combobox GPU 2 si moins de deux GPUs sont connectés
+                    if len(self.interface.gpu_connected) < 2:
+                        self.interface.gpu_2_combobox.configure(state="disabled")
+                        # Réinitialiser la valeur sélectionnée du deuxième GPU
+                        self.interface.gpu_2_value_var.set("")
 
                     # Vérifie le bouton check plot
                     if self.interface.plotter_gui.check_plot_status == "off":
