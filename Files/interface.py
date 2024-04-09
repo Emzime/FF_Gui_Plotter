@@ -3,30 +3,13 @@ import logging
 import os
 import platform
 import tkinter as tk
+import webbrowser
 from tkinter import ttk, Frame
 
+import GPUtil
 from ttkthemes.themed_style import ThemedStyle
 
 from Files.initialize_variables import InitializeVariables
-
-
-class HyperlinkLabel(tk.Label):
-    def __init__(self, parent, text, url, *args, **kwargs):
-        super().__init__(parent, text=text, *args, **kwargs)
-        self.url = url
-        self.bind("<Button-1>", self.open_link)
-        self.bind("<Enter>", self.on_enter)
-        self.bind("<Leave>", self.on_leave)
-
-    def open_link(self, event):
-        import webbrowser
-        webbrowser.open_new(self.url)
-
-    def on_enter(self, event):
-        self.configure(fg="#0792ea", cursor="hand2")
-
-    def on_leave(self, event):
-        self.configure(fg="#BFBFBF", cursor="arrow")
 
 
 class Interface:
@@ -58,6 +41,9 @@ class Interface:
 
         # Liste pour stocker les exécutables disponibles
         available_executables = []
+
+        # Initialiser gpu_connected comme une liste vide
+        self.gpu_connected = []
 
         # Parcourir les fichiers dans le répertoire "Plotter" et normaliser les chemins
         for file_name in os.listdir(plotter_directory):
@@ -184,7 +170,7 @@ class Interface:
         else:
             self.check_button.configure(state="disabled")
             self.check_button.config(image=self.logging_button_off, background="#1C1C1C")
-            self.check_label.config(foreground="red")
+            self.check_label.config(foreground="#F10000")
             self.plotter_gui.check_plot_status = "off"
             # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
@@ -271,15 +257,8 @@ class Interface:
         news_plot_frame = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
         news_plot_frame.grid(row=0, column=1, padx=(5, 0), pady=(5, 5), sticky="nsew")
 
-        # Crée un label pour afficher le texte
-        site_link_label = HyperlinkLabel(news_plot_frame, text="Site web: https://xch.ffarmers.eu", bg="#1C1C1C", fg="#BFBFBF", anchor="w", url="https://xch.ffarmers.eu")
-        site_link_label.grid(row=0, column=0, padx=(10, 0), pady=(0, 0), sticky="w")
-
-        discord_link_label = HyperlinkLabel(news_plot_frame, text="Discord: https://discord.gg/xgGhcS2jyq", bg="#1C1C1C", fg="#BFBFBF", anchor="w", url="https://discord.gg/xgGhcS2jyq")
-        discord_link_label.grid(row=1, column=0, padx=(10, 0), pady=(0, 0), sticky="w")
-
         # Ajoutez le numéro du plot en cours
-        self.news_text = tk.Label(news_plot_frame, text="     ", bg="#1C1C1C", fg="#1C1C1C")
+        self.news_text = tk.Label(news_plot_frame, text="", bg="#1C1C1C", fg="#1C1C1C")
         self.news_text.grid(row=2, column=0, padx=(10, 0), pady=(0, 0), sticky="w", columnspan=2)
 
         # Ajoutez des poids pour partager la hauteur
@@ -287,6 +266,54 @@ class Interface:
         news_plot_frame.grid_rowconfigure(1, weight=1)
         # Ajoutez des poids pour partager la largeur
         news_plot_frame.grid_columnconfigure(0, weight=1)
+
+        # Créer une sous-frame pour le logo FF
+        input_logo = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
+        input_logo.grid(row=0, column=2, padx=(5, 5), pady=(5, 5), sticky="nsew")
+
+        # Chargez l'image dans une variable de classe
+        self.logo_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "logo.png"))
+        self.input_logo_img = tk.PhotoImage(file=self.logo_path).subsample(1)
+
+        # Créez un label pour afficher l'image
+        self.logo_label = ttk.Label(input_logo, image=self.input_logo_img, background="#1C1C1C", anchor="center")
+        self.logo_label.grid(row=0, column=1, padx=(5, 5), pady=(5, 5), sticky="w")
+        # Ajoutez des poids pour partager la hauteur
+        self.logo_label.grid_rowconfigure(0, weight=1)
+
+        # Assurez-vous que l'image ne soit pas collectée par le garbage collector
+        self.logo_label.photo = self.input_logo_img
+
+        # Associer la fonction au clic sur l'image
+        self.logo_label.bind("<Button-1>", self.open_site_link)
+
+        # Associer les fonctions aux événements de survol de la souris
+        self.logo_label.bind("<Enter>", self.on_enter_site_link)
+        self.logo_label.bind("<Leave>", self.on_leave_site_link)
+
+        # Créer une sous-frame pour le logo discord
+        input_logo_discord = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
+        input_logo_discord.grid(row=0, column=3, padx=(0, 0), pady=(5, 5), sticky="nsew")
+
+        # Chargez l'image dans une variable de classe
+        self.logo_path_discord = self.static_method.resource_path(os.path.join(directory_path, "Images", "discord.png"))
+        self.input_logo_discord_img = tk.PhotoImage(file=self.logo_path_discord).subsample(1)
+
+        # Créez un label pour afficher l'image
+        self.logo_label_discord = ttk.Label(input_logo_discord, image=self.input_logo_discord_img, background="#1C1C1C", anchor="center")
+        self.logo_label_discord.grid(row=0, column=1, padx=(5, 5), pady=(5, 5), sticky="w")
+        # Ajoutez des poids pour partager la hauteur
+        self.logo_label_discord.grid_rowconfigure(0, weight=1)
+
+        # Assurez-vous que l'image ne soit pas collectée par le garbage collector
+        self.logo_label_discord.photo = self.input_logo_discord_img
+
+        # Associer la fonction au clic sur l'image
+        self.logo_label_discord.bind("<Button-1>", self.open_discord_link)
+
+        # Associer les fonctions aux événements de survol de la souris
+        self.logo_label_discord.bind("<Enter>", self.on_enter_discord_link)
+        self.logo_label_discord.bind("<Leave>", self.on_leave_discord_link)
 
         # Créez la première colonne avec 12 lignes et 2 colonnes
         left_column = tk.Frame(main_frame, bg="#565656", highlightthickness=1, highlightbackground="#565656")
@@ -303,34 +330,16 @@ class Interface:
         padding = 10
         input_frame.configure(padx=padding)
 
-        # Créer une sous-frame pour compression_label, ram_qty_label, et le reste
-        input_logo = tk.Frame(input_frame, bg="#1C1C1C")
-        input_logo.grid(row=1, column=0, columnspan=2, padx=(0, 0), pady=(20, 20), sticky="nsew")
-
-        # Chargez l'image dans une variable de classe
-        logo_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "logo.png"))
-        input_logo_img = tk.PhotoImage(file=logo_path)
-
-        # Créez un label pour afficher l'image
-        logo_label = ttk.Label(input_logo, image=input_logo_img, background="#1C1C1C", anchor="center")
-        logo_label.grid(row=0, column=0, columnspan=2, pady=(0, 10), padx=(0, 0), sticky="n")
-        # Ajoutez des poids pour partager la hauteur
-        logo_label.grid_rowconfigure(0, weight=1)
-
-        # Assurez-vous que l'image ne soit pas collectée par le garbage collector
-        logo_label.photo = input_logo_img
-
         # Créer une sous-frame pour plotter_path
-        self.input_subframe_1 = tk.Frame(input_logo, bg="#1C1C1C")
-        self.input_subframe_1.grid(row=1, column=0, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.input_subframe_1 = tk.Frame(input_frame, bg="#1C1C1C")
+        self.input_subframe_1.grid(row=1, column=0, columnspan=4, padx=(0, 0), pady=(10, 10), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
         self.input_subframe_1.columnconfigure(0, weight=1)
-        self.input_subframe_1.columnconfigure(1, weight=1)
 
         # Ligne 5 : Chemin vers l'exécutable de plotter
-        self.plotter_path_label = ttk.Label(self.input_subframe_1, style="Custom.TLabel", text="Sélectionner le plotter", anchor="center")
-        self.plotter_path_label.grid(row=0, column=0, pady=(0, 5), padx=4, sticky="nsew", columnspan=2)
+        self.plotter_path_label = tk.Label(self.input_subframe_1, text="Sélectionner le plotter", anchor="center", background="#0792ea", foreground="#000000")
+        self.plotter_path_label.grid(row=0, column=0, pady=(0, 1), padx=4, sticky="nsew", columnspan=2)
 
         # Créer une liste déroulante avec les exécutables disponibles
         self.plotter_path_combobox = ttk.Combobox(self.input_subframe_1, values=available_executables)
@@ -340,15 +349,15 @@ class Interface:
 
         # Créer une sous-frame pour check_plot
         self.input_subframe_2 = tk.Frame(self.input_subframe_1, bg="#1C1C1C")
-        self.input_subframe_2.grid(row=2, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="n")
+        self.input_subframe_2.grid(row=2, column=0, columnspan=4, padx=(0, 0), pady=(10, 10), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
         self.input_subframe_2.columnconfigure(0, weight=1)
         self.input_subframe_2.columnconfigure(1, weight=1)
 
         # Ligne 3 : check_plot
-        self.check_plot_value_label = ttk.Label(self.input_subframe_2, style="Custom.TLabel", text="Nombre de contrôles", anchor="center")
-        self.check_plot_value_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.check_plot_value_label = tk.Label(self.input_subframe_2, text="Nombre de contrôles", anchor="center", background="#0792ea", foreground="#000000")
+        self.check_plot_value_label.grid(row=0, column=0, pady=(0, 1), padx=(5, 5), sticky="nsew")
 
         check_plot_value = self.config_manager.read_config(self.config_manager.config_file).get("check_plot_value")
         self.check_plot_value_var = tk.StringVar(value=check_plot_value)
@@ -360,8 +369,8 @@ class Interface:
         self.check_plot_value_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_check_plot_value_config())
 
         # Ligne 4 : check_threshold
-        self.check_threshold_value_label = ttk.Label(self.input_subframe_2, style="Custom.TLabel", text="Taux de preuve en %", anchor="center")
-        self.check_threshold_value_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.check_threshold_value_label = tk.Label(self.input_subframe_2, text="Taux de preuve en %", anchor="center", background="#0792ea", foreground="#000000")
+        self.check_threshold_value_label.grid(row=0, column=1, pady=(0, 1), padx=(5, 5), sticky="nsew")
 
         check_threshold_value = self.config_manager.read_config(self.config_manager.config_file).get("check_threshold_value")
         self.check_threshold_value_var = tk.StringVar(value=check_threshold_value)
@@ -387,15 +396,15 @@ class Interface:
 
         # Créer une sous-frame
         self.input_subframe_3: Frame = tk.Frame(self.input_subframe_2, bg="#1C1C1C")
-        self.input_subframe_3.grid(row=3, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="n")
+        self.input_subframe_3.grid(row=3, column=0, columnspan=4, padx=(0, 0), pady=(10, 10), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
         self.input_subframe_3.columnconfigure(0, weight=1)
         self.input_subframe_3.columnconfigure(1, weight=1)
 
         # Ligne 1 : Taux de compression du plot
-        self.compression_label = ttk.Label(self.input_subframe_3, style="Custom.TLabel", text="Taux de compression", anchor="center")
-        self.compression_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.compression_label = tk.Label(self.input_subframe_3, text="Taux de compression", anchor="center", background="#0792ea", foreground="#000000")
+        self.compression_label.grid(row=0, column=0, pady=(0, 1), padx=(5, 5), sticky="nsew")
 
         # Récupérez les valeurs de compression à partir de InitializeVariables.plotSizes
         current_compression = self.config_manager.read_config(self.config_manager.config_file).get("compression")
@@ -408,14 +417,20 @@ class Interface:
             # Si le plotter est bladebit, n'afficher que les compressions de 1 à 7
             compression_values = [str(compression) for compression in range(1, 8)]
             # Si la compression est supérieur à 9, on assigne 5 par défaut
-            compression = min(int(current_compression), 5) if current_compression and current_compression.isdigit() else 5
-            # Mise à jour du fichier de configuration
-            self.config_manager.update_config({"compression": compression}, self.config_manager.config_file)
+            compression = min(int(current_compression), 1) if current_compression is not None else None
             ram_qty_values = ["16", "128", "256"]
+        elif current_plotter_name.startswith("cuda_plot_k32_"):
+            # Si le plotter est bladebit, n'afficher que les compressions de 29 à 33
+            compression_values = [str(compression) for compression in range(29, 34)]
+            compression = min(int(current_compression), 29) if current_compression is not None else None
+            ram_qty_values = ["16", "32", "64", "128", "256", "512"]
         else:
-            # Sinon, utilisez toutes les compressions disponibles
-            compression_values = [str(compression) for compression in InitializeVariables().plotSizes.keys()]
-            compression = int(current_compression) if current_compression is not None else None
+            # Si le plotter est bladebit, n'afficher que les compressions de 1 à 9 et 11 à 20
+            compression_values = [str(compression) for compression in range(1, 21)]
+            # Retirer la valeur 10 de la liste des compressions si elle est présente
+            if '10' in compression_values:
+                compression_values.remove('10')
+            compression = min(int(current_compression), 15) if current_compression is not None else None
             ram_qty_values = ["16", "32", "64", "128", "256", "512"]
 
         self.compression_var = tk.StringVar(value=compression)
@@ -427,8 +442,8 @@ class Interface:
 
         # Ligne 2 : Quantité de RAM
         current_ram_qty = self.config_manager.read_config(self.config_manager.config_file).get("ram_qty")
-        self.ram_qty_label = ttk.Label(self.input_subframe_3, style="Custom.TLabel", text="Quantité de RAM", anchor="center")
-        self.ram_qty_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.ram_qty_label = tk.Label(self.input_subframe_3, text="Quantité de RAM", anchor="center", background="#0792ea", foreground="#000000")
+        self.ram_qty_label.grid(row=0, column=1, pady=(0, 1), padx=(5, 5), sticky="nsew")
         self.ram_qty_var = tk.StringVar(value=current_ram_qty)
         self.ram_qty_combobox = ttk.Combobox(self.input_subframe_3, textvariable=self.ram_qty_var, values=ram_qty_values)
         self.ram_qty_combobox.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew")
@@ -437,15 +452,15 @@ class Interface:
 
         # Créer une sous-frame pour compression_label, ram_qty_label
         self.input_subframe_4 = tk.Frame(self.input_subframe_3, bg="#1C1C1C")
-        self.input_subframe_4.grid(row=4, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
+        self.input_subframe_4.grid(row=4, column=0, columnspan=4, padx=(0, 0), pady=(10, 0), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
         self.input_subframe_4.columnconfigure(0, weight=1)
         self.input_subframe_4.columnconfigure(1, weight=1)
 
         # Ligne 3 : Pool contract
-        self.contract_label = ttk.Label(self.input_subframe_4, style="Custom.TLabel", text="Pool contract", anchor="center")
-        self.contract_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.contract_label = tk.Label(self.input_subframe_4, text="Pool contract", anchor="center", background="#0792ea", foreground="#000000")
+        self.contract_label.grid(row=0, column=0, pady=(0, 1), padx=(5, 5), sticky="nsew")
 
         # Créez une variable pour stocker la valeur actuelle du contrat de pool
         current_contract_key = self.config_manager.read_config(self.config_manager.config_file).get("contract")
@@ -457,8 +472,8 @@ class Interface:
         self.contract_entry.bind("<FocusOut>", lambda event=None: self.update_contract_config())
 
         # Ligne 4 : Farmer public key
-        self.farmer_key_label = ttk.Label(self.input_subframe_4, style="Custom.TLabel", text="Farmer public key", anchor="center")
-        self.farmer_key_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.farmer_key_label = tk.Label(self.input_subframe_4, text="Farmer public key", anchor="center", background="#0792ea", foreground="#000000")
+        self.farmer_key_label.grid(row=0, column=1, pady=(0, 1), padx=(5, 5), sticky="nsew")
 
         # Créez une variable pour stocker la valeur actuelle de la clé du fermier
         current_farmer_key = self.config_manager.read_config(self.config_manager.config_file).get("farmer_key")
@@ -470,16 +485,16 @@ class Interface:
         self.farmer_key_entry.bind("<FocusOut>", lambda event=None: self.update_farmer_key_config())
 
         # Créer une sous-frame pour ssd_temp et ssd_temp2move
-        self.input_subframe_5 = tk.Frame(self.input_subframe_4, bg="#1C1C1C")
-        self.input_subframe_5.grid(row=5, column=0, columnspan=2, padx=(0, 0), pady=(20, 0), sticky="nsew")
+        self.input_subframe_5 = tk.Frame(self.input_subframe_2, bg="#1C1C1C")
+        self.input_subframe_5.grid(row=5, column=0, columnspan=4, padx=(0, 0), pady=(0, 10), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
         self.input_subframe_5.columnconfigure(0, weight=1)
         self.input_subframe_5.columnconfigure(1, weight=1)
 
         # Ligne 6 : Disque temporaire -t1 (nvme/ssd)
-        self.ssd_temp_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire -t", anchor="center")
-        self.ssd_temp_label.grid(row=0, column=0, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.ssd_temp_label = tk.Label(self.input_subframe_5, text="Disque temporaire -t", anchor="center", background="#0792ea", foreground="#000000")
+        self.ssd_temp_label.grid(row=0, column=0, pady=(0, 1), padx=(5, 5), sticky="nsew")
 
         self.ssd_temp_entry = ttk.Entry(self.input_subframe_5)
         self.ssd_temp_entry.grid(row=1, column=0, pady=(0, 0), padx=(5, 5), sticky="nsew")
@@ -495,16 +510,19 @@ class Interface:
         self.ssd_temp_button.config(cursor="hand2")
 
         # Ligne 7 : Disque temporaire 2
-        self.ssd_temp2move_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire 2", anchor="center")
+        temp2move_text = ""
         if current_plotter_name.startswith("cuda_plot_"):
             if int(current_ram_qty) == 128:
-                self.ssd_temp2move_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire -2", anchor="center")
+                temp2move_text = "Disque temporaire -2"
             elif int(current_ram_qty) < 128:
-                self.ssd_temp2move_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire -3", anchor="center")
+                temp2move_text = "Disque temporaire -3"
         elif current_plotter_name.startswith("bladebit"):
-            self.ssd_temp2move_label = ttk.Label(self.input_subframe_5, style="Custom.TLabel", text="Disque temporaire -2", anchor="center")
+            temp2move_text = "Disque temporaire -2"
+        else:
+            temp2move_text = "Disque temporaire 2"
 
-        self.ssd_temp2move_label.grid(row=0, column=1, pady=(0, 5), padx=(5, 5), sticky="nsew")
+        self.ssd_temp2move_label = tk.Label(self.input_subframe_5, text=temp2move_text, anchor="center", background="#0792ea", foreground="#000000")
+        self.ssd_temp2move_label.grid(row=0, column=1, pady=(0, 1), padx=(5, 5), sticky="nsew")
 
         self.ssd_temp2move_entry = ttk.Entry(self.input_subframe_5)
         self.ssd_temp2move_entry.grid(row=1, column=1, pady=(0, 0), padx=(5, 5), sticky="nsew")
@@ -523,15 +541,15 @@ class Interface:
 
         # Créer une sous-frame pour hdd_dir
         self.input_subframe_6 = tk.Frame(self.input_subframe_5, bg="#1C1C1C")
-        self.input_subframe_6.grid(row=6, column=0, columnspan=2, padx=0, pady=(20, 30), sticky="nsew")
+        self.input_subframe_6.grid(row=6, column=0, columnspan=2, padx=0, pady=(10, 10), sticky="nsew")
 
         # Ajouter des poids pour partager la largeur
         self.input_subframe_6.columnconfigure(0, weight=1)
         self.input_subframe_6.columnconfigure(1, weight=1)
 
         # Ligne 8 : Dossier de destination -d
-        self.hdd_dir_label = ttk.Label(self.input_subframe_6, style="Custom.TLabel", text="Dossier de destination -d", anchor="center")
-        self.hdd_dir_label.grid(row=0, column=0, pady=(0, 5), padx=5, sticky="nsew", columnspan=2)
+        self.hdd_dir_label = tk.Label(self.input_subframe_6, text="Dossier de destination -d", anchor="center", background="#0792ea", foreground="#000000")
+        self.hdd_dir_label.grid(row=0, column=0, pady=(0, 1), padx=5, sticky="nsew", columnspan=2)
 
         self.hdd_dir_listbox = tk.Listbox(self.input_subframe_6, selectmode=tk.MULTIPLE, height=4)
         self.hdd_dir_listbox.grid(row=1, column=0, pady=(0, 0), padx=5, sticky="nsew", columnspan=2)
@@ -556,6 +574,153 @@ class Interface:
         self.remove_hdd_dir_button = ttk.Button(button_frame, text="Supprimer", command=self.plotter_gui.remove_hdd_dir)
         self.remove_hdd_dir_button.grid(row=0, column=1, pady=0, padx=(2, 0), sticky="nsew")
         self.remove_hdd_dir_button.config(cursor="hand2")
+
+        # Créer une sous-frame pour carte graphique
+        self.input_subframe_7 = tk.Frame(self.input_subframe_6, bg="#1C1C1C")
+        self.input_subframe_7.grid(row=7, column=0, columnspan=3, padx=(0, 0), pady=(10, 10), sticky="nsew")
+
+        # Ajouter des poids pour partager la largeur
+        self.input_subframe_7.columnconfigure(0, weight=1)
+        self.input_subframe_7.columnconfigure(1, weight=1)
+        self.input_subframe_7.columnconfigure(2, weight=1)
+
+        # Ligne 10 : GPU 1
+        # Récupération des valeurs des GPU depuis la configuration
+        gpu_1_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_1", ""))
+        gpu_2_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_2", ""))
+        waitforcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("waitforcopy", ""))
+
+        self.gpu_1_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text="GPU 1*", anchor="center")
+        self.gpu_1_label.grid(row=1, column=0, padx=(0, 0), pady=(0, 5), sticky="n")
+        self.gpu_1_value_var = tk.StringVar(value=gpu_1_value)
+
+        # Ajout d'un champ vide au début de la liste
+        gpu_values = [""]
+
+        # Liste des valeurs pour le combobox
+        self.gpu_1_combobox = ttk.Combobox(self.input_subframe_7, textvariable=self.gpu_1_value_var, values=gpu_values, width=5)
+        self.gpu_1_combobox.grid(row=2, column=0, padx=(0, 0), pady=(0, 5), sticky="n")
+        # Assignation des valeurs corrigées aux combobox
+        self.gpu_1_value_var.set(gpu_1_value)
+        # Associez la fonction à l'événement de changement de la combobox
+        self.gpu_1_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_gpu_1_config())
+
+        # Associer les fonctions aux événements de survol de la souris
+        self.gpu_1_label.bind("<Enter>", self.on_enter_gpu_1_info)
+        self.gpu_1_label.bind("<Leave>", self.on_leave_gpu_1_info)
+
+        # Ligne 10 : GPU 2
+        self.gpu_2_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text="GPU 2*", anchor="center")
+        self.gpu_2_label.grid(row=1, column=1, padx=(0, 0), pady=(0, 5), sticky="n")
+        self.gpu_2_value_var = tk.StringVar(value=gpu_2_value)
+
+        self.gpu_2_combobox = ttk.Combobox(self.input_subframe_7, textvariable=self.gpu_2_value_var, width=5)
+        self.gpu_2_combobox.grid(row=2, column=1, padx=(0, 0), pady=(0, 5), sticky="n")
+        # Assignation des valeurs corrigées aux combobox
+        self.gpu_2_value_var.set(gpu_2_value)
+        # Associez la fonction à l'événement de changement de la combobox
+        self.gpu_2_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_gpu_2_config())
+
+        # Associer les fonctions aux événements de survol de la souris
+        self.gpu_2_label.bind("<Enter>", self.on_enter_gpu_2_info)
+        self.gpu_2_label.bind("<Leave>", self.on_leave_gpu_2_info)
+
+        # Ligne 11 : Max number of plots to cache in tmpdir -Q
+        self.waitforcopy_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text="-w*", anchor="center")
+        self.waitforcopy_label.grid(row=1, column=2, padx=(0, 0), pady=(0, 5), sticky="n")
+        self.waitforcopy_var = tk.StringVar(value=waitforcopy_value)
+
+        # Liste des valeurs pour le combobox
+        waitforcopy_values = ["on", "off"]
+
+        self.waitforcopy_combobox = ttk.Combobox(self.input_subframe_7, textvariable=self.waitforcopy_var, values=waitforcopy_values, width=5)
+        self.waitforcopy_combobox.grid(row=2, column=2, padx=(0, 0), pady=(0, 5), sticky="n")
+        # Assignation des valeurs corrigées aux combobox
+        self.waitforcopy_var.set(waitforcopy_value)
+        # Associez la fonction à l'événement de changement de la combobox
+        self.waitforcopy_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_waitforcopy_config())
+
+        # Associer les fonctions aux événements de survol de la souris
+        self.waitforcopy_label.bind("<Enter>", self.on_enter_waitforcopy_info)
+        self.waitforcopy_label.bind("<Leave>", self.on_leave_waitforcopy_info)
+
+        # Créer une sous-frame pour carte graphique
+        self.input_subframe_8 = tk.Frame(self.input_subframe_7, bg="#1C1C1C")
+        self.input_subframe_8.grid(row=7, column=0, columnspan=3, padx=0, pady=(5, 0), sticky="nsew")
+
+        # Ajouter des poids pour partager la largeur
+        self.input_subframe_8.columnconfigure(0, weight=1)
+        self.input_subframe_8.columnconfigure(1, weight=1)
+        self.input_subframe_8.columnconfigure(2, weight=1)
+
+        # Récupération des valeurs depuis la configuration
+        maxtmp_value = str(self.config_manager.read_config(self.config_manager.config_file).get("maxtmp", ""))
+        copylimit_value = str(self.config_manager.read_config(self.config_manager.config_file).get("copylimit", ""))
+        maxcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("maxcopy", ""))
+
+        # Ligne 11 : Max number of plots to cache in tmpdir -Q
+        self.maxtmp_label = ttk.Label(self.input_subframe_8, style="Custom.TLabel", text="-Q*", anchor="center")
+        self.maxtmp_label.grid(row=0, column=0, padx=(0, 0), pady=(0, 5), sticky="n")
+        self.maxtmp_var = tk.StringVar(value=maxtmp_value)
+
+        # Liste des valeurs pour le combobox
+        maxtmp_values = ["-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+
+        self.maxtmp_combobox = ttk.Combobox(self.input_subframe_8, textvariable=self.maxtmp_var, values=maxtmp_values, width=5)
+        self.maxtmp_combobox.grid(row=1, column=0, padx=(0, 0), pady=(0, 5), sticky="n")
+        # Assignation des valeurs corrigées aux combobox
+        self.maxtmp_var.set(maxtmp_value)
+        # Associez la fonction à l'événement de changement de la combobox
+        self.maxtmp_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_maxtmp_config())
+
+        # Associer les fonctions aux événements de survol de la souris
+        self.maxtmp_label.bind("<Enter>", self.on_enter_maxtmp_info)
+        self.maxtmp_label.bind("<Leave>", self.on_leave_maxtmp_info)
+
+        # Ligne 12 : Max number of parallel copies in total -A
+        self.copylimit_label = ttk.Label(self.input_subframe_8, style="Custom.TLabel", text="-A*", anchor="center")
+        self.copylimit_label.grid(row=0, column=1, padx=(0, 0), pady=(0, 5), sticky="n")
+        self.copylimit_var = tk.StringVar(value=copylimit_value)
+
+        # Liste des valeurs pour le combobox
+        copylimit_values = ["-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+
+        self.copylimit_combobox = ttk.Combobox(self.input_subframe_8, textvariable=self.copylimit_var, values=copylimit_values, width=5)
+        self.copylimit_combobox.grid(row=1, column=1, padx=(0, 0), pady=(0, 5), sticky="n")
+        # Assignation des valeurs corrigées aux combobox
+        self.copylimit_var.set(copylimit_value)
+        # Associez la fonction à l'événement de changement de la combobox
+        self.copylimit_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_copylimit_config())
+
+        # Associer les fonctions aux événements de survol de la souris
+        self.copylimit_label.bind("<Enter>", self.on_enter_copylimit_info)
+        self.copylimit_label.bind("<Leave>", self.on_leave_copylimit_info)
+
+        # Ligne 13 : Max number of parallel copies to same HDD -W
+        self.maxcopy_label = ttk.Label(self.input_subframe_8, style="Custom.TLabel", text="-W*", anchor="center")
+        self.maxcopy_label.grid(row=0, column=2, padx=(0, 0), pady=(0, 5), sticky="n")
+        self.maxcopy_var = tk.StringVar(value=maxcopy_value)
+
+        # Liste des valeurs pour le combobox
+        maxcopy_values = ["-1", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+
+        self.maxcopy_combobox = ttk.Combobox(self.input_subframe_8, textvariable=self.maxcopy_var, values=maxcopy_values, width=5)
+        self.maxcopy_combobox.grid(row=1, column=2, padx=(0, 0), pady=(0, 5), sticky="n")
+        # Assignation des valeurs corrigées aux combobox
+        self.maxcopy_var.set(maxcopy_value)
+        # Associez la fonction à l'événement de changement de la combobox
+        self.maxcopy_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.update_maxcopy_config())
+
+        # Associer les fonctions aux événements de survol de la souris
+        self.maxcopy_label.bind("<Enter>", self.on_enter_maxcopy_info)
+        self.maxcopy_label.bind("<Leave>", self.on_leave_maxcopy_info)
+
+        # Créer une étiquette pour afficher le message
+        self.info_label = tk.Label(self.input_subframe_7, text="Options avancées pour utilisateur averti", highlightthickness=1, background="#FF9B00", foreground="#000000")
+        self.info_label.grid(row=0, column=0, columnspan=4, padx=(5, 5), pady=(15, 5), sticky="nsew")
+
+        # Mettre à jour les valeurs des combobox des GPU connectés
+        self.update_gpu_combobox_values()
 
         # Créer une Frame pour les boutons sous la configuration
         button_frame = tk.Frame(left_column, bg="#1C1C1C")
@@ -593,6 +758,10 @@ class Interface:
         # Créer une Frame pour les journaux
         log_frame = tk.Frame(right_column, bg="#1C1C1C")
         log_frame.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
+
+        # Créer une étiquette pour afficher le message
+        self.message_label = tk.Label(right_column, text="", background="#1C1C1C")
+        self.message_label.grid(row=1, column=0, padx=(0, 17), pady=(3, 0), sticky="ne")
 
         # Ajoutez des poids pour partager la largeur
         log_frame.grid_columnconfigure(0, weight=1)
@@ -688,6 +857,57 @@ class Interface:
         # Actualise l'interface
         self.root.update()
 
+    def update_gpu_combobox_values(self):
+        # Récupérer les GPUs disponibles sur le système
+        available_gpus = GPUtil.getGPUs()
+
+        # Créer une liste pour stocker les valeurs des GPUs connectés
+        connected_gpus = []
+
+        # Ajouter les GPUs connectés à la liste
+        for gpu in available_gpus:
+            connected_gpus.append(str(gpu.id))
+
+        # Mettre à jour les valeurs des combobox avec les GPUs connectés
+        self.gpu_1_combobox['values'] = connected_gpus
+        self.gpu_2_combobox['values'] = connected_gpus
+
+        self.gpu_connected = connected_gpus
+
+        # Désactiver le combobox GPU 2 si moins de deux GPUs sont connectés
+        if len(connected_gpus) < 2:
+            self.gpu_2_combobox.configure(state="disabled")
+            # Réinitialiser la valeur sélectionnée du deuxième GPU
+            self.gpu_2_value_var.set("")
+        else:
+            self.gpu_2_combobox.configure(state="normal")
+
+    # Définir la fonction pour ouvrir le lien sur clic
+    @staticmethod
+    def open_discord_link(event):
+        webbrowser.open_new("https://discord.gg/xgGhcS2jyq")
+
+    def on_enter_discord_link(self, event):
+        self.logo_label_discord.configure(background="#BFBFBF", foreground="#0792ea", cursor="hand2")
+        self.message_label.configure(text="Cliquez pour rejoindre le serveur Discord", highlightthickness=1, background="#00DF03", foreground="#000000")
+
+    def on_leave_discord_link(self, event):
+        self.logo_label_discord.configure(background="#1C1C1C", foreground="#BFBFBF", cursor="arrow")
+        self.message_label.configure(text="", highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
+
+    # Définir la fonction pour ouvrir le lien sur clic
+    @staticmethod
+    def open_site_link(event):
+        webbrowser.open_new("https://xch.ffarmers.eu")
+
+    def on_enter_site_link(self, event):
+        self.logo_label.configure(background="#BFBFBF", foreground="#0792ea", cursor="hand2")
+        self.message_label.configure(text="Cliquez pour rejoindre le site", highlightthickness=1, background="#00DF03", foreground="#000000")
+
+    def on_leave_site_link(self, event):
+        self.logo_label.configure(background="#1C1C1C", foreground="#BFBFBF", cursor="arrow")
+        self.message_label.configure(text="", highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
+
     def update_contract_config(self):
         selected_contract = self.contract_var.get()
         # Mise à jour du fichier de configuration
@@ -702,6 +922,84 @@ class Interface:
         selected_compression = self.compression_var.get()
         # Mise à jour du fichier de configuration
         self.config_manager.update_config({"compression": selected_compression}, self.config_manager.config_file)
+
+    def update_gpu_1_config(self):
+        selected_gpu_1 = self.gpu_1_value_var.get()
+        # Mise à jour du fichier de configuration
+        self.config_manager.update_config({"gpu_1": selected_gpu_1}, self.config_manager.config_file)
+
+    def on_enter_gpu_1_info(self, event):
+        self.gpu_1_label.configure(foreground="#00DF03", cursor="hand2")
+        self.info_label.configure(text="ID du premier GPU (défaut = 0)", highlightthickness=1, background="#00DF03", foreground="#000000")
+
+    def on_leave_gpu_1_info(self, event):
+        self.gpu_1_label.configure(foreground="#0792ea", cursor="arrow")
+        self.info_label.configure(text="Options avancées pour utilisateur averti", highlightthickness=1, background="#FF9B00", foreground="#000000")
+
+    def update_gpu_2_config(self):
+        selected_gpu_2 = self.gpu_2_value_var.get()
+        # Mise à jour du fichier de configuration
+        self.config_manager.update_config({"gpu_2": selected_gpu_2}, self.config_manager.config_file)
+
+    def on_enter_gpu_2_info(self, event):
+        self.gpu_2_label.configure(foreground="#00DF03", cursor="hand2")
+        self.info_label.configure(text="ID du second GPU (défaut = 1)", highlightthickness=1, background="#00DF03", foreground="#000000")
+
+    def on_leave_gpu_2_info(self, event):
+        self.gpu_2_label.configure(foreground="#0792ea", cursor="arrow")
+        self.info_label.configure(text="Options avancées pour utilisateur averti", highlightthickness=1, background="#FF9B00", foreground="#000000")
+
+    def update_waitforcopy_config(self):
+        waitforcopy = self.waitforcopy_var.get()
+        # Mise à jour du fichier de configuration
+        self.config_manager.update_config({"waitforcopy": waitforcopy}, self.config_manager.config_file)
+
+    def on_enter_waitforcopy_info(self, event):
+        self.waitforcopy_label.configure(foreground="#00DF03", cursor="hand2")
+        self.info_label.configure(text="Attend la fin de la copie avant crée un nouveau plot", highlightthickness=1, background="#00DF03", foreground="#000000")
+
+    def on_leave_waitforcopy_info(self, event):
+        self.waitforcopy_label.configure(foreground="#0792ea", cursor="arrow")
+        self.info_label.configure(text="Options avancées pour utilisateur averti", highlightthickness=1, background="#FF9B00", foreground="#000000")
+
+    def update_maxtmp_config(self):
+        maxtmp = self.maxtmp_var.get()
+        # Mise à jour du fichier de configuration
+        self.config_manager.update_config({"maxtmp": maxtmp}, self.config_manager.config_file)
+
+    def on_enter_maxtmp_info(self, event):
+        self.maxtmp_label.configure(foreground="#00DF03", cursor="hand2")
+        self.info_label.configure(text="Nombre de parcelles misent en cache (défaut = -1)", highlightthickness=1, background="#00DF03", foreground="#000000")
+
+    def on_leave_maxtmp_info(self, event):
+        self.maxtmp_label.configure(foreground="#0792ea", cursor="arrow")
+        self.info_label.configure(text="Options avancées pour utilisateur averti", highlightthickness=1, background="#FF9B00", foreground="#000000")
+
+    def update_copylimit_config(self):
+        copylimit = self.copylimit_var.get()
+        # Mise à jour du fichier de configuration
+        self.config_manager.update_config({"copylimit": copylimit}, self.config_manager.config_file)
+
+    def on_enter_copylimit_info(self, event):
+        self.copylimit_label.configure(foreground="#00DF03", cursor="hand2")
+        self.info_label.configure(text="Nombre de copies parallèles au total (défaut = -1)", highlightthickness=1, background="#00DF03", foreground="#000000")
+
+    def on_leave_copylimit_info(self, event):
+        self.copylimit_label.configure(foreground="#0792ea", cursor="arrow")
+        self.info_label.configure(text="Options avancées pour utilisateur averti", highlightthickness=1, background="#FF9B00", foreground="#000000")
+
+    def update_maxcopy_config(self):
+        maxcopy = self.maxcopy_var.get()
+        # Mise à jour du fichier de configuration
+        self.config_manager.update_config({"maxcopy": maxcopy}, self.config_manager.config_file)
+
+    def on_enter_maxcopy_info(self, event):
+        self.maxcopy_label.configure(foreground="#00DF03", cursor="hand2")
+        self.info_label.configure(text="Nombre de copies sur le même HDD (défaut= -1)", highlightthickness=1, background="#00DF03", foreground="#000000")
+
+    def on_leave_maxcopy_info(self, event):
+        self.maxcopy_label.configure(foreground="#0792ea", cursor="arrow")
+        self.info_label.configure(text="Options avancées pour utilisateur averti", highlightthickness=1, background="#FF9B00", foreground="#000000")
 
     def update_ram_config(self):
         selected_ram_qty = self.ram_qty_var.get()

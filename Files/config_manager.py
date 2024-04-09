@@ -27,11 +27,12 @@ class ConfigManager:
             "check_plot_status": "off",
             "check_plot_value": "30",
             "check_threshold_value": "80",
-            "gpu_1": "0",
+            "gpu_1": "",
             "gpu_2": "",
-            "max_tmp_cache": "",
-            "parallel_copies": "1",
-            "copy_limit": "1"
+            "waitforcopy": "",
+            "maxtmp": "",
+            "copylimit": "",
+            "maxcopy": ""
         }
 
         self.stats = {

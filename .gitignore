@@ -3,6 +3,7 @@ stats.txt
 FF_Plot_log.log
 CreateExe.txt
 venv/
+/.venv/
 /.idea
 /Files/__pycache__
 /Builder/build/

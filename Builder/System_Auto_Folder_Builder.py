@@ -33,6 +33,9 @@ def build_executable():
         ("Files/progress_bar.py", "Files/"),
         ("Files/static_method.py", "Files/"),
         ("Files/welcome.py", "Files/"),
+        ("Builder/System_Auto_Folder_Builder.py", "Builder/"),
+        ("Builder/System_Auto_Standalone_Builder.py", "Builder/"),
+        ("Plotter/cuda_plot_k32.exe", "Plotter/"),
         ("Plotter/cuda_plot_k32_v3.exe", "Plotter/"),
         ("Plotter/bladebit_cuda.exe", "Plotter/")
     ]
@@ -54,6 +57,9 @@ def build_executable():
         ("Files/progress_bar.py", "Files/"),
         ("Files/static_method.py", "Files/"),
         ("Files/welcome.py", "Files/"),
+        ("Builder/System_Auto_Folder_Builder.py", "Builder/"),
+        ("Builder/System_Auto_Standalone_Builder.py", "Builder/"),
+        ("Plotter/cuda_plot_k32", "Plotter/"),
         ("Plotter/cuda_plot_k32_v3", "Plotter/"),
         ("Plotter/bladebit-cuda-v3.1.0-centos-x86-64.tar", "Plotter/"),
         ("Plotter/bladebit-cuda-v3.1.0-ubuntu-arm64.tar", "Plotter/"),
