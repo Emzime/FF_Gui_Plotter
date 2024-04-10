@@ -10,7 +10,7 @@ git clone https://github.com/Emzime/FF_Gui_Plotter.git
 cd FF_Gui_Plotter
 python -m venv venv
 . ./venv/bin/activate
-pip install psutil ttkthemes
+pip install psutil ttkthemes GPUtil
 python main.py
 ```
 
