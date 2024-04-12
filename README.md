@@ -19,14 +19,13 @@ Build on Linux:
 . ./venv/bin/activate
 cd Builder
 python System_Auto_Folder_Builder.py
-
+```
 or
-
+```
 . ./venv/bin/activate
 cd Builder
 python System_Auto_Standalone_Builder.py
 ```
-
 
 Windows installation:
 ```
@@ -44,8 +43,9 @@ Build on Windows:
 cd Builder
 py System_Auto_Folder_Builder.py
 
+```
 or
-
+```
 . ./venv/Scripts/activate
 cd Builder
 py System_Auto_Standalone_Builder.py
