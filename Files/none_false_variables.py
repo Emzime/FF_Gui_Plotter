@@ -17,8 +17,5 @@ class NoneFalseVariables:
         self.stop_creation = False
         # Variable pour suivre si current_bad_proof_match a déjà été trouvé
         self.bad_proof_found = False
-
         self.bad_plot_messages = False
         self.total_plot_created_messages = False
-
-        self.delOldPlots = False

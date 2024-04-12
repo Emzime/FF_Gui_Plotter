@@ -9,7 +9,9 @@ class Lists:
         self.interface = ff_plotter_gui.interface
         self.config_manager = ff_plotter_gui.config_manager
 
+        # Récupère les variables depuis le fichier de configuration
         plotter = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
+        # Récupérer le nom sans extension
         plotter_name = os.path.splitext(plotter)[0]
 
         # Initialisation de la liste des messages de progression
@@ -82,7 +84,7 @@ class Lists:
                 "Total plot creation time was"
             ]
 
-        # Désactiver tous les éléments de l'interface pendant la création
+        # Désactiver les éléments de l'interface pendant la création
         self.check_plot_elements_disable = [
             self.interface.check_plot_value_combobox,
             self.interface.check_threshold_value_combobox,
