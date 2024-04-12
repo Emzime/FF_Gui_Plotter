@@ -9,3 +9,5 @@ venv/
 /Builder/build/
 /Builder/dist
 Builder/French Farmer Gui.spec
+/Logs/*.log
+/Languages/__pycache__

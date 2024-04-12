@@ -23,6 +23,7 @@ from Files.none_false_variables import NoneFalseVariables
 from Files.pattern import Pattern
 from Files.progress_bar import ProgressBar
 from Files.static_method import StaticMethod
+from Files.translation import Lang
 from Files.welcome import Welcome
 
 
@@ -30,12 +31,11 @@ class FFPlotterGUI:
     def __init__(self):
         # Création des instances
         self.config_manager = ConfigManager()
-
         # Récupère les valeurs depuis le fichier de configuration
         self.config_progress_status = self.config_manager.read_config(self.config_manager.config_file).get("progress_status")
         self.check_plot_status = self.config_manager.read_config(self.config_manager.config_file).get("check_plot_status")
+        self.delCompressedPlot_status = self.config_manager.read_config(self.config_manager.config_file).get("delCompressedPlot_status")
         self.logs_status = self.config_manager.read_config(self.config_manager.config_file).get("logs_status")
-
         self.queue_logs = LogQueue()
         self.initialize_variables = InitializeVariables()
         self.none_false_variable = NoneFalseVariables()
@@ -70,6 +70,8 @@ class FFPlotterGUI:
         self.update_idletasks()
 
     def on_combobox_selected(self, event):
+        # Accéder aux informations sur l'événement si nécessaire
+        print(event)
         # Mise à jour du fichier de configuration uniquement si la valeur est vide
         selected_executable = self.interface.plotter_path_combobox.get()
         if selected_executable:
@@ -77,70 +79,43 @@ class FFPlotterGUI:
             self.interface.plotter_path_combobox.insert(0, selected_executable)
             # Mise à jour du fichier de configuration
             self.config_manager.update_config({"plotter_executable": selected_executable}, self.config_manager.config_file)
-
             # Mettre à jour le titre de la fenêtre avec le nom du plotter sélectionné
             plotter_name = os.path.splitext(selected_executable)[0]  # Récupérer le nom sans extension
             self.interface.root.title(f"French Farmer Gui plotter {plotter_name}")
+            # Réinitialiser les valeurs des combobox
+            self.interface.compression_combobox['values'] = []
+            self.interface.ram_qty_combobox['values'] = []
 
             # Mise à jour des valeurs de la combobox ram_qty en fonction du plotter
             if plotter_name.startswith("bladebit"):
-                # Activer check_plot
-                self.interface.check_button.configure(state="normal")
-                self.interface.check_button.config(image=self.interface.logging_button_on, background="#1C1C1C")
-                self.interface.check_label.config(foreground="#0792ea")
-                self.interface.check_plot_status = "on"
-
-                # Mise à jour de l'interface
-                self.interface.ssd_temp2move_label.config(text="Disque temporaire -2")
-                self.interface.check_plot_value_combobox.configure(state="normal")
-                self.interface.check_threshold_value_combobox.configure(state="normal")
-
-                # Mise à jour du fichier de configuration
-                self.interface.plotter_gui.config_manager.update_config({"check_plot_status": "on"}, self.config_manager.config_file)
-
-                # Change les listes déroulantes
-                compression = [str(compression) for compression in range(1, 8)]
+                # Définir les valeurs de combobox pour bladebit
+                compression_values = [str(compression) for compression in range(1, 8)]
                 ram_qty_values = ["16", "128", "256"]
             else:
-                # Désactiver check_plot
-                self.interface.check_button.configure(state="disabled")
-                self.interface.check_button.config(image=self.interface.logging_button_off, background="#1C1C1C")
-                self.interface.check_label.config(foreground="red")
-                self.interface.check_plot_status = "off"
-
-                # Récupère la quantité de mémoire
-                current_ram_qty = self.config_manager.read_config(self.config_manager.config_file).get("ram_qty")
-
-                # Mise à jour de l'interface
-                if int(current_ram_qty) == 128:
-                    self.interface.ssd_temp2move_label.config(text="Disque temporaire -2")
-                elif int(current_ram_qty) < 128:
-                    self.interface.ssd_temp2move_label.config(text="Disque temporaire -3")
-
-                self.interface.check_plot_value_combobox.configure(state="disabled")
-                self.interface.check_threshold_value_combobox.configure(state="disabled")
-
-                # Mise à jour du fichier de configuration
-                self.interface.plotter_gui.config_manager.update_config({"check_plot_status": "off"}, self.config_manager.config_file)
-
-                # Change les listes déroulantes
                 if plotter_name == "cuda_plot_k32":
-                    # Générer la liste des compressions de 1 à 20
-                    compression = [str(compression) for compression in range(1, 21)]
-                    # Retirer la valeur 10 de la liste des compressions si elle est présente
-                    if '10' in compression:
-                        compression.remove('10')
-                    ram_qty_values = ["16", "32", "64", "128", "256", "512"]
+                    compression_values = [str(compression) for compression in range(1, 21) if compression != 10]
                 else:
-                    # Si le plotter est bladebit, n'afficher que les compressions de 29 à 33
-                    compression = [str(compression) for compression in range(29, 34)]
-                    ram_qty_values = ["16", "32", "64", "128", "256", "512"]
+                    compression_values = [str(compression) for compression in range(29, 34)]
+                ram_qty_values = ["16", "32", "64", "128", "256", "512"]
 
-            # Assigne la liste de la combobox ram_qty en fonction du plotter sélectionné
-            self.interface.compression_combobox['values'] = compression
-
-            # Assigne la liste de la combobox compression en fonction du plotter sélectionné
+            # Mise à jour du bouton check plot
+            self.interface.buttonSwitch.check()
+            # Assigne les valeurs de combobox
+            self.interface.compression_combobox['values'] = compression_values
             self.interface.ram_qty_combobox['values'] = ram_qty_values
+
+            # Vérifier si la valeur sélectionnée est toujours valide
+            current_compression = self.interface.compression_var.get()
+            if current_compression not in compression_values:
+                self.interface.compression_var.set(compression_values[0])
+                # Mise à jour du fichier de configuration
+                self.config_manager.update_config({"compression": compression_values[0]}, self.config_manager.config_file)
+
+            current_ram_qty = self.interface.ram_qty_var.get()
+            if current_ram_qty not in ram_qty_values:
+                self.interface.ram_qty_var.set(ram_qty_values[0])
+                # Mise à jour du fichier de configuration
+                self.config_manager.update_config({"ram_qty": ram_qty_values[0]}, self.config_manager.config_file)
 
         # Recherche automatique et mise à jour du fichier de configuration uniquement si la valeur est vide
         if not self.config_manager.read_config(self.config_manager.config_file).get("plotter_path"):
@@ -152,7 +127,7 @@ class FFPlotterGUI:
     # Menu parcourir du disque temporaire 1
     def browse_ssd_temp(self):
         # Ouvre une boîte de dialogue pour sélectionner le disque temporaire -t1 (NVME/SSD)
-        ssd_temp = filedialog.askdirectory(title="Sélectionnez le disque temporaire -t1 (NVME/SSD)")
+        ssd_temp = filedialog.askdirectory(title=Lang.translate("browse_select_t1"))
         if ssd_temp:
             # Normalise le chemin
             normalized_ssd_temp = os.path.normpath(ssd_temp)
@@ -165,57 +140,46 @@ class FFPlotterGUI:
     # Menu parcourir du disque temporaire 2
     def browse_ssd_temp2move(self):
         # Permettez à l'utilisateur de parcourir et de sélectionner le chemin du disque temporaire 2 -t2
-        selected_ssd_temp2move = filedialog.askdirectory(title="Sélectionnez le disque temporaire 2 -t2")
-
+        selected_ssd_temp2move = filedialog.askdirectory(title=Lang.translate("browse_select_t2"))
         # Normalise le chemin
         normalized_ssd_temp2move = os.path.normpath(selected_ssd_temp2move)
-
         # Mise à jour de l'interface graphique
         self.interface.ssd_temp2move_entry.delete(0, tk.END)
         self.interface.ssd_temp2move_entry.insert(0, normalized_ssd_temp2move)
-
         # Mise à jour du fichier de configuration
         self.config_manager.update_config({"ssd_temp2move": normalized_ssd_temp2move}, self.config_manager.config_file)
 
     # Ajout de disques de destination
     def add_hdd_dir(self):
         # Ouvre une boîte de dialogue pour ajouter un dossier de destination -d
-        hdd_dir = filedialog.askdirectory(title="Sélectionnez un dossier de destination -d")
+        hdd_dir = filedialog.askdirectory(title=Lang.translate("browse_select_d"))
         if hdd_dir:
             # Lire la configuration actuelle
             current_config = self.config_manager.read_config(self.config_manager.config_file)
-
             # Récupérer la valeur actuelle de "hdd_dir" ou une chaîne vide si elle n'existe pas
             hdd_dir_str = current_config.get("hdd_dir", "")
-
             # Supprimer les barres obliques inversées et diviser la chaîne en une liste
             hdd_dir_list = [os.path.normpath(hdd_directory.strip()) for hdd_directory in hdd_dir_str.split(',') if hdd_directory.strip()]
-
             # Vérifier si le dossier est déjà dans la liste
             if os.path.normpath(hdd_dir) not in hdd_dir_list:
                 # Ajouter le nouveau dossier à la liste
                 hdd_dir_list.append(os.path.normpath(hdd_dir))
-
                 # Joindre la liste mise à jour en une seule chaîne séparée par des virgules
                 updated_hdd_dirs = ",".join(hdd_dir_list)
-
                 # Récupère la nouvelle valeur
                 current_config["hdd_dir"] = updated_hdd_dirs
-
                 # Mise à jour du fichier de configuration
                 self.config_manager.update_config(current_config)
-
                 # Efface la liste actuelle
                 self.interface.hdd_dir_listbox.delete(0, tk.END)
-
                 # Mise à jour de l'interface graphique
                 for hdd in hdd_dir_list:
                     self.interface.hdd_dir_listbox.insert(tk.END, hdd)
 
-    # Suppression des disques de destination
     def remove_hdd_dir(self):
-        # Supprime le dossier de destination -d sélectionné dans la liste
+        # Supprime le disque de destination -d sélectionné dans la liste
         selected_indices = self.interface.hdd_dir_listbox.curselection()
+        # Récupère la liste des disques depuis le fichier de configuration
         hdd_dirs = self.config_manager.read_config(self.config_manager.config_file).get("hdd_dir", "").split(",")
 
         for index in reversed(selected_indices):
@@ -224,10 +188,8 @@ class FFPlotterGUI:
 
         # Joindre la liste mise à jour en une seule chaîne séparée par des virgules
         updated_hdd_dirs_str = ",".join(hdd_dirs)
-
         # Mise à jour du fichier de configuration
         self.config_manager.update_config({"hdd_dir": updated_hdd_dirs_str}, self.config_manager.config_file)
-
         # Efface la liste actuelle
         for index in reversed(selected_indices):
             self.interface.hdd_dir_listbox.delete(index)
@@ -257,7 +219,7 @@ class FFPlotterGUI:
             free = disk.free
             return total, used, free
         except Exception as e:
-            self.queue_logs.log_queue_errors.put(f"Erreur lors de la récupération de la taille du disque: {e}")
+            self.queue_logs.log_queue_errors.put(Lang.translate("errorRetrievingDiskSize").format(e=str(e)))
             return 0, 0, 0
 
     def calculate_max_plots_on_disk(self, hdd, compression):
@@ -270,9 +232,28 @@ class FFPlotterGUI:
         # Méthode de suppression des anciens plots
         # Obtenez la liste des fichiers de plots dans le répertoire
         files = os.listdir(directory)
+        # Liste pour stocker les noms de fichiers des plots à supprimer
+        plots_to_delete = []
 
-        # Filtrer les fichiers qui sont des plots et correspondent au modèle
-        plots_to_delete = [file for file in files if file.endswith(".plot") and self.pattern.plotFormatPattern.match(file)]
+        # Recherche des plots à supprimer en fonction du premier paterne
+        for file in files:
+            if file.endswith(".plot") and self.pattern.plotFormatPattern.match(file):
+                plots_to_delete.append(file)
+
+        # Récupère les variables depuis le fichier de configuration
+        old_compressed_plots = self.config_manager.read_config(self.config_manager.config_file).get("delCompressedPlot_status")
+        new_compression = self.config_manager.read_config(self.config_manager.config_file).get("compression")
+        if old_compressed_plots == Lang.translate("on"):
+            # Recherche des plots à supprimer pour les plots donc la compression est inférieur à la compression actuellement créée
+            for file in files:
+                if file.endswith(".plot"):
+                    match = self.pattern.plotFormatCompressedPattern.match(file)
+                    if match:
+                        # Récupérer la valeur de compression du plot actuel
+                        old_compression = int(match.group(1))
+                        # Comparer la compression avec la compression du nouveau plot
+                        if old_compression < new_compression:
+                            plots_to_delete.append(file)
 
         # Triez les plots par date de création (les plus anciens d'abord)
         plots_to_delete.sort(key=lambda x: os.path.getctime(os.path.join(directory, x)))
@@ -280,7 +261,6 @@ class FFPlotterGUI:
         return plots_to_delete
 
     def find_hdd_with_space(self, hdd_dirs, compression):
-        # Recherche d'un disque ayant de l'espace disponible
         # Liste des disques de destination avec de l'espace
         hdd_dirs_with_space = [hdd for hdd in hdd_dirs if self.calculate_max_plots_on_disk(hdd, compression) > 0]
 
@@ -289,13 +269,13 @@ class FFPlotterGUI:
             return hdd_dirs_with_space[0]
         else:
             # Redirection vers log_queue_messages
-            self.queue_logs.log_queue_messages.put((f"L'espace est plein, recherche d'un ancien plot à supprimer...", "warning"))
+            self.queue_logs.log_queue_messages.put((Lang.translate("spaceIsFull"), "warning"))
             time.sleep(0.8)
 
         # Si aucun disque n'a suffisamment d'espace, chercher un disque avec des anciens plots et supprimer un par un
         for hdd in hdd_dirs:
             # Vérifier si le disque contient des anciens plots
-            if self.none_false_variable.delOldPlots is True:
+            if self.config_manager.read_config("delCompressedPlot_status") == Lang.translate("on"):
                 plots_to_delete = self.delete_plots(hdd)
 
                 if plots_to_delete:
@@ -305,11 +285,11 @@ class FFPlotterGUI:
 
                     try:
                         # Redirection vers log_queue_messages
-                        self.queue_logs.log_queue_messages.put((f"Ancien plot trouvé: {plot_path}", "warning"))
+                        self.queue_logs.log_queue_messages.put((Lang.translate("oldPlotFound").format(plot_path=plot_path), "warning"))
                         time.sleep(0.8)
 
                         # Redirection vers log_queue_messages
-                        self.queue_logs.log_queue_messages.put((f"Suppression en cours...", "warning"))
+                        self.queue_logs.log_queue_messages.put((Lang.translate("deletionInProgress"), "warning"))
                         time.sleep(0.8)
 
                         # Supprimer le plot
@@ -317,7 +297,7 @@ class FFPlotterGUI:
                         os.unlink(plot_path)
 
                         # Redirection vers log_queue_messages
-                        self.queue_logs.log_queue_messages.put((f"Ancien plot supprimé avec succès", "warning"))
+                        self.queue_logs.log_queue_messages.put((Lang.translate("oldPlotSuccessfullyRemoved"), "warning"))
                         time.sleep(0.8)
 
                         # Récupère la valeur actuelle dans le fichier de configuration
@@ -335,26 +315,26 @@ class FFPlotterGUI:
 
                     except Exception as e:
                         # Redirection vers log_queue_messages en cas d'erreur
-                        self.queue_logs.log_queue_errors.put(f"Erreur lors de la suppression du plot {plot_path}: {e}")
+                        self.queue_logs.log_queue_errors.put(Lang.translate("errorDeletingPlot").format(plot_path=plot_path, e=str(e)))
 
         # Si aucun disque n'a suffisamment d'espace, retourner None
         return None
 
     def start_plotting(self, show_dialog=True):
         # Si le processus plotter est en cours et show_dialog est True, demandez à l'utilisateur s'il souhaite le lancer
-        if show_dialog and tkinter.messagebox.askokcancel("Lancement", "Voulez-vous lancer la création de plot ?"):
+        if show_dialog and tkinter.messagebox.askokcancel(Lang.translate("title_launchPlotCreation"), Lang.translate("launchPlotCreation")):
             show_dialog = False
 
         if show_dialog is False:
             # Si plotter_pid est trouvé et la variable de plots en cours de création est True
             if self.none_false_variable.plot_creation_in_progress is True:
                 # On stoppe le script
-                self.queue_logs.log_queue_errors.put("La création de plot est déjà en cours.")
+                self.queue_logs.log_queue_errors.put(Lang.translate("plotCreationAlreadyUnderway"))
                 return
 
             # Vérifie si tous les champs obligatoires sont remplis
             if not self.validate_input_fields():
-                self.queue_logs.log_queue_errors.put("Veuillez remplir tous les champs obligatoires.")
+                self.queue_logs.log_queue_errors.put(Lang.translate("pleaseFillAllRequiredFields"))
                 return
 
             # Récupère les valeurs des champs depuis le fichier de configuration
@@ -370,21 +350,21 @@ class FFPlotterGUI:
 
             # Vérifie si l'emplacement de l'exécutable plotter est valide
             if not self.static_method.is_plotter_valid(plotter_path_join):
-                self.queue_logs.log_queue_errors.put(f"L'emplacement de l'exécutable plotter n'est pas valide: {plotter_path_join}")
+                self.queue_logs.log_queue_errors.put(Lang.translate("locationOfPlotterInvalid").format(plotter_path_join=plotter_path_join))
                 return
 
             # Vérifie si l'emplacement du disque temporaire -t1 est valide
             if not self.static_method.is_ssd_temp_valid(ssd_temp):
-                self.queue_logs.log_queue_errors.put(f"L'emplacement du disque temporaire -t1 n'est pas valide: {ssd_temp}")
+                self.queue_logs.log_queue_errors.put(Lang.translate("locationT1Invalid").format(ssd_temp=ssd_temp))
                 return
 
             # Vérifie si l'emplacement du disque temporaire 2 -t2 (s'il est spécifié) est valide
             if ssd_temp2move and not self.static_method.is_ssd_temp_valid(ssd_temp2move):
-                self.queue_logs.log_queue_errors.put(f"L'emplacement du disque temporaire 2 -t2 n'est pas valide: {ssd_temp2move}")
+                self.queue_logs.log_queue_errors.put(Lang.translate("locationT2Invalid").format(ssd_temp2move=ssd_temp2move))
                 return
 
             # Message dans la file d'attente
-            self.queue_logs.log_queue_messages.put(("Initialisation...", None))
+            self.queue_logs.log_queue_messages.put((Lang.translate("Initialisation"), None))
             time.sleep(0.8)
 
             # Cherchez un disque avec suffisamment d'espace ou supprimez des anciens plots au besoin
@@ -392,7 +372,7 @@ class FFPlotterGUI:
 
             # Vérifie si le disque de destination est toujours disponible
             if not self.static_method.is_hdd_dir_valid(selected_hdd):
-                self.queue_logs.log_queue_errors.put(f"Le disque de destination n'est plus disponible: {selected_hdd}")
+                self.queue_logs.log_queue_errors.put(Lang.translate("destinationDiskNotAvailable").format(selected_hdd=selected_hdd))
                 return
 
             # Créez et démarrez le thread de surveillance
@@ -404,7 +384,7 @@ class FFPlotterGUI:
             self.initialize_variables.max_plots_on_selected_hdd = self.calculate_max_plots_on_disk(selected_hdd, compression)
 
             # Création d'un thread pour exécuter la boucle plots_progress
-            if self.config_progress_status == "on":
+            if self.config_progress_status == Lang.translate("on"):
                 progress_thread = threading.Thread(target=self.progress_bar.plots_progress)
                 progress_thread.daemon = True
                 progress_thread.start()
@@ -420,7 +400,6 @@ class FFPlotterGUI:
         plotter_path = self.config_manager.read_config(self.config_manager.config_file).get("plotter_path", self.config_manager.defaults["plotter_path"])
         plotter_path_join = os.path.join(plotter_path, plotter_executable)
         ssd_temp = os.path.join(self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp"), "")
-
         # Calculez le nombre de cœurs à utiliser pour atteindre environ 80% d'utilisation
         cores_to_use = psutil.cpu_count(logical=False) - 1  # Utilisez tous les cœurs sauf le dernier
 
@@ -436,7 +415,7 @@ class FFPlotterGUI:
         ]
 
         # Ajoute --check et --check-threshold si la vérification des plots est activée à la commande de création de plot
-        if self.check_plot_status == "on":
+        if self.check_plot_status == Lang.translate("on"):
             # Récupère les valeurs pour le check plot
             check_plot_value = str(int(self.config_manager.read_config(self.config_manager.config_file).get("check_plot_value")))
             check_threshold_value = str(int(self.config_manager.read_config(self.config_manager.config_file).get("check_threshold_value")) / 100)
@@ -463,7 +442,6 @@ class FFPlotterGUI:
     def build_gigahorse_command(self, selected_hdd):
         # Récupère le type de système
         system = platform.system()
-
         # Récupère les variables depuis le fichier de configuration
         plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
         # Récupérer le nom sans extension
@@ -478,7 +456,6 @@ class FFPlotterGUI:
         copylimit_value = str(self.config_manager.read_config(self.config_manager.config_file).get("copylimit", ""))
         maxcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("maxcopy", ""))
         waitforcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("waitforcopy", ""))
-
         # Construit le chemin complet de l'exécutable
         plotter_path_join = os.path.join(plotter_path, plotter_executable)
 
@@ -534,7 +511,7 @@ class FFPlotterGUI:
             ])
 
         # Ajoute les arguments liés -w
-        if waitforcopy_value == "on":
+        if waitforcopy_value == Lang.translate("on"):
             command.extend([
                 "-w", waitforcopy_value,
             ])
@@ -552,7 +529,6 @@ class FFPlotterGUI:
             ram_qty_gib_divided = math.floor(ram_qty_gib / 2)
             # Défini la variable pour la ram
             ramQty = ram_qty_gib_divided
-
             # Ajoute les arguments liés à la ram pour windows
             # if ram_qty_gb == 128:
             command.extend([
@@ -562,7 +538,7 @@ class FFPlotterGUI:
         # Ajoute les arguments liés au disque temporaire 2
         if ssd_temp2 != "":
             # Modifier le disque temporaire utilisé selon la quantité de RAM sélectionnée
-            if plotter_name.startswith("cuda_plot_"):
+            if plotter_name.startswith("cuda_plot"):
                 if ram_qty_gb == 128:
                     # ajoute le champ à la commande
                     command.extend([
@@ -590,13 +566,14 @@ class FFPlotterGUI:
         # Si plotter_pid n'est pas trouvé et la variable de plots en cours de création est False
         if self.none_false_variable.plot_creation_in_progress is False:
             try:
+                # Récupère le
                 plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable", self.config_manager.defaults["plotter_executable"])
                 plotter_name = os.path.splitext(plotter_executable)[0]
 
                 # Vérifie si un disque est sélectionné
                 if not selected_hdd:
                     # Tous les disques ont été utilisés, arrêtez la création de plots
-                    self.queue_logs.log_queue_errors.put("Aucun disques de destinations n'a suffisamment d'espace pour créer un plot.")
+                    self.queue_logs.log_queue_errors.put(Lang.translate("noDestinationDisksHaveEnoughSpace"))
                     time.sleep(0.8)
                     # Réinitialisation de la variable de plots en cours de création
                     self.none_false_variable.plot_creation_in_progress = False
@@ -605,23 +582,22 @@ class FFPlotterGUI:
                 # Vérification de l'espace disponible
                 total, used, free = self.get_disk_size(selected_hdd)
                 free_space_on_hdd = free
-
                 # Convertir en Mo, To, Go
                 available_space_mb = free_space_on_hdd / (1024 ** 2)
                 available_space_gb = free_space_on_hdd / (1024 ** 3)
                 available_space_tb = free_space_on_hdd / (1024 ** 4)
 
                 # Message dans la file d'attente
-                self.queue_logs.log_queue_messages.put((f"Espace disponible: {available_space_mb:.2f} Mo | {available_space_gb:.2f} Go | {available_space_tb:.2f} To", None))
+                self.queue_logs.log_queue_messages.put((Lang.translate("availableSpace").format(available_space_mb=available_space_mb, available_space_gb=available_space_gb, available_space_tb=available_space_tb), None))
                 time.sleep(0.8)
 
                 # Message dans la file d'attente
-                self.queue_logs.log_queue_messages.put((f"{self.initialize_variables.max_plots_on_selected_hdd} plots à créer dans {selected_hdd}", None))
+                self.queue_logs.log_queue_messages.put((Lang.translate("plotsToBeCreatedIn").format(on_selected_hdd=self.initialize_variables.max_plots_on_selected_hdd, selected_hdd=selected_hdd), None))
                 self.interface.current_plot_max_text.config(text=f"{self.initialize_variables.max_plots_on_selected_hdd}")
                 time.sleep(0.8)
 
                 # Appel de la commande en fonction du plotter
-                if plotter_name == "bladebit_cuda" or plotter_name.startswith("bladebit-cuda"):
+                if plotter_name.startswith("bladebit"):
                     setCommand = self.build_bladebit_cuda_command(selected_hdd)
                 else:
                     setCommand = self.build_gigahorse_command(selected_hdd)
@@ -648,16 +624,14 @@ class FFPlotterGUI:
 
                 # Assigne le processus à la variable
                 self.none_false_variable.plotter_process = plotter_process
-
                 # Assigne le PID de plotter à la variable
                 self.none_false_variable.plotter_pid = plotter_process.pid
-
                 # Met à jour la variable qui dit que la création est en cours
                 self.none_false_variable.plot_creation_in_progress = True
 
                 # Message dans la file d'attente
                 plotter_executable = self.config_manager.read_config(self.config_manager.config_file).get("plotter_executable")
-                self.queue_logs.log_queue_messages.put((f"Lancement de {plotter_executable} avec le PID: {self.none_false_variable.plotter_pid}", None))
+                self.queue_logs.log_queue_messages.put((Lang.translate("launchWithPID").format(plotter_executable=plotter_executable, plotter_pid=self.none_false_variable.plotter_pid), None))
                 time.sleep(0.8)
 
                 # Message dans la file d'attente
@@ -680,7 +654,7 @@ class FFPlotterGUI:
                 # Vérifie si plotter s'est terminé normalement
                 if return_code == 0:
                     # Message dans la file d'attente
-                    self.queue_logs.log_queue_messages.put((f"Création des plots sur le disque {selected_hdd} terminée.", None))
+                    self.queue_logs.log_queue_messages.put((Lang.translate("creationPlotsOnCompleted").format(selected_hdd=selected_hdd), None))
                     # Réinitialise la variable de création en cours
                     self.none_false_variable.plot_creation_in_progress = False
                     # Réinitialise la variable du processus
@@ -700,11 +674,11 @@ class FFPlotterGUI:
                     return
 
             except FileNotFoundError as e:
-                self.queue_logs.log_queue_errors.put(f"Fichier plotter introuvable : {e}")
+                self.queue_logs.log_queue_errors.put(Lang.translate("plotterNotFound").format(e=str(e)))
             except PermissionError as e:
-                self.queue_logs.log_queue_errors.put(f"Permission refusée : {e}")
+                self.queue_logs.log_queue_errors.put(Lang.translate("permissionDenied").format(e=str(e)))
             except Exception as e:
-                self.queue_logs.log_queue_errors.put(f"Erreur lors du démarrage de plotter : {e}")
+                self.queue_logs.log_queue_errors.put(Lang.translate("errorDuringPlotterStartup").format(e=str(e)))
             finally:
                 self.none_false_variable.plot_creation_in_progress = False
 
@@ -714,16 +688,12 @@ class FFPlotterGUI:
             if self.none_false_variable.plotter_pid:
                 # On termine le processus plotter
                 os.kill(self.none_false_variable.plotter_pid, signal.SIGTERM)
-
                 # Attendre que le processus plotter se termine proprement
                 self.none_false_variable.plotter_process.wait()
-
                 # Réinitialise la variable
                 self.none_false_variable.plot_creation_in_progress = False
-
                 # Initialise la variable pour change les boutons au moment où l'on stoppe la création
                 self.none_false_variable.stop_creation = False
-
                 # Réinitialise l'interface de progression
                 self.initialize_variables.current_plot_number = 0
                 self.interface.current_plot_text.config(text="0")
@@ -732,15 +702,13 @@ class FFPlotterGUI:
                 self.initialize_variables.current_step = 0
                 self.interface.progress_single_plot_bar["value"] = 0
                 self.interface.progress_label.config(text="0%")
-
                 # Affiche un message
-                self.queue_logs.log_queue_messages.put(("Arrêt du processus plotter effectué avec succès.", None))
-
+                self.queue_logs.log_queue_messages.put((Lang.translate("plotterProcessSuccessfullyStopped"), None))
                 # Affiche un message
                 self.log_manager.log_plotter_message("Création arrêtée.")
 
         except Exception as e:
-            self.queue_logs.log_queue_errors.put(f"Erreur lors de l'arrêt du processus plotter: {e}")
+            self.queue_logs.log_queue_errors.put(Lang.translate("errorStoppingPlotterProcess").format(e=str(e)))
             # Réinitialise la variable du processus
             self.none_false_variable.plotter_pid = None
             # Réinitialise la variable
@@ -760,30 +728,27 @@ class FFPlotterGUI:
         if self.none_false_variable.plotter_pid:
             # Si le processus plotter est en cours, demandez à l'utilisateur s'il souhaite l'arrêter
             if tkinter.messagebox.askokcancel(
-                    "Processus en cours",
-                    "Le processus plotter est en cours.\n\n"
-                    "Voulez-vous l'arrêter avant de fermer l'application ?"
+                    Lang.translate("processInProgress"),
+                    Lang.translate("plotterProcessUnderway")
             ):
                 # Affiche un message
-                self.queue_logs.log_queue_messages.put((f"Arrêt du processus plotter en cours...", None))
-
+                self.queue_logs.log_queue_messages.put((Lang.translate("stoppingPlotterProcessInProgress"), None))
                 # Initialise la variable pour change les boutons au moment où l'on stoppe la création
                 self.none_false_variable.stop_creation = True
-
                 # Démarrer le thread d'arrêt du processus plotter de manière asynchrone
                 stop_thread = threading.Thread(target=self.async_stop_plotter_process)
                 stop_thread.start()
         else:
             # Affiche un avertissement
             if tkinter.messagebox.askokcancel(
-                    "Fermeture de l'application",
-                    "Êtes-vous sûr de vouloir fermer l'application ?"
+                Lang.translate("closingApplication"),
+                Lang.translate("wantToCloseApp")
             ):
                 # Fermer la fenêtre
                 self.interface.root.destroy()
 
-    # Mise à jour des boutons de l'interface utilisateur
     def update_button_text(self):
+        # Mise à jour des boutons de l'interface utilisateur
         while True:
             if self.none_false_variable.stop_creation:
                 # Si la création est en cours d'arrêt, désactiver les boutons
@@ -795,17 +760,17 @@ class FFPlotterGUI:
                 if self.none_false_variable.plotter_pid:
                     # Si la création est en cours
                     self.interface.start_button.config(state="disabled")
-                    self.interface.stop_button.config(text="Stopper la création", state="normal")
+                    self.interface.stop_button.config(text=Lang.translate("stopCreation"), state="normal")
                     for element in self.lists.check_plot_elements_disable:
                         element.config(state="disabled")
 
                     # Vérifie le bouton check plot
-                    if self.interface.plotter_gui.check_plot_status == "on":
+                    if self.interface.plotter_gui.check_plot_status == Lang.translate("on"):
                         self.interface.check_plot_value_combobox.configure(state="disabled")
                         self.interface.check_threshold_value_combobox.configure(state="disabled")
 
                 else:
-                    self.interface.stop_button.config(text="Fermer la fenêtre", state="normal")
+                    self.interface.stop_button.config(text=Lang.translate("closeWindow"), state="normal")
                     self.interface.start_button.config(state="normal")
                     for element in self.lists.check_plot_elements_disable:
                         element.config(state="normal")
@@ -817,7 +782,7 @@ class FFPlotterGUI:
                         self.interface.gpu_2_value_var.set("")
 
                     # Vérifie le bouton check plot
-                    if self.interface.plotter_gui.check_plot_status == "off":
+                    if self.interface.plotter_gui.check_plot_status == Lang.translate("off"):
                         self.interface.check_plot_value_combobox.configure(state="disabled")
                         self.interface.check_threshold_value_combobox.configure(state="disabled")
                     else:
@@ -835,7 +800,7 @@ class FFPlotterGUI:
     def count_down(self, seconds):
         for seconds_left in range(seconds, 0, -1):
             # Redirection vers log_queue_messages
-            self.log_manager.log_plotter_message(f"Recherche d'espace disponible dans {seconds_left} secondes\n")
+            self.log_manager.log_plotter_message(Lang.translate("searchForAvailableSpace").format(seconds_left=seconds_left))
             # Attendre une seconde entre chaque itération pour obtenir un compte à rebours en temps réel
             time.sleep(1)
 

@@ -2,6 +2,7 @@
 import os
 import sys
 import logging
+import webbrowser
 
 
 class StaticMethod:
@@ -13,8 +14,14 @@ class StaticMethod:
     @staticmethod
     def configure_logging(filename):
         # Nom du fichier de log
-        log_filename = f"{filename}.log"
+        log_filename = f"{filename}"
         logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+    @staticmethod
+    def configure_error_logging(filename):
+        # Nom du fichier de log d'erreurs
+        error_log_filename = f"{filename}"
+        logging.basicConfig(filename=error_log_filename, level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
     @staticmethod
     def is_plotter_valid(plotter_path):
@@ -33,3 +40,24 @@ class StaticMethod:
             return os.path.exists(hdd_dir)
         else:
             return False
+
+    # Définir la fonction pour ouvrir le lien sur clic
+    @staticmethod
+    def open_new_version_link(event):
+        # Accéder aux informations sur l'événement si nécessaire
+        print(event)
+        webbrowser.open_new("https://github.com/Emzime/FF_Gui_Plotter/releases/latest")
+
+    # Définir la fonction pour ouvrir le lien sur clic
+    @staticmethod
+    def open_site_link(event):
+        # Accéder aux informations sur l'événement si nécessaire
+        print(event)
+        webbrowser.open_new("https://xch.ffarmers.eu")
+
+    # Définir la fonction pour ouvrir le lien sur clic
+    @staticmethod
+    def open_discord_link(event):
+        # Accéder aux informations sur l'événement si nécessaire
+        print(event)
+        webbrowser.open_new("https://discord.gg/xgGhcS2jyq")
