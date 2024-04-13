@@ -1,1 +1,0 @@
-Voici un test pour l'affiche des messages de la team envoyé à l'application
