@@ -67,22 +67,23 @@ class Interface:
         style.configure('CustomSend.TButton', background='#9C9C9C')
 
         # Ajouter le message de version à la fenêtre principale
-        self.current_version, self.latest_version = self.newVersion.check_new_package_version()
-        new_message = Lang.translate("newVersionAvailable").format(latest_version=self.latest_version)
-        old_message = Lang.translate("currentVersion").format(current_version=self.current_version)
+        if self.plotter_gui.none_false_variable.version_Status is True:
+            self.current_version, self.latest_version = self.newVersion.check_new_package_version()
+            new_message = Lang.translate("newVersionAvailable").format(latest_version=self.latest_version)
+            old_message = Lang.translate("currentVersion").format(current_version=self.current_version)
 
-        if self.latest_version is not None and self.current_version < self.latest_version:
-            self.root.title(Lang.translate("guiName") + new_message)
-            # Ajouter un label dans la barre de titre pour simuler un lien
-            self.title_label = Label(self.root, text=new_message)
-            self.title_label.configure(background="#0792ea", foreground="#FFFF00")
-            self.title_label.bind("<Button-1>", lambda event: self.static_method.open_new_version_link)
-            # Associer les fonctions aux événements de survol de la souris
-            self.title_label.bind("<Enter>", self.onMouseEnter.new_version_link)
-            self.title_label.bind("<Leave>", self.onMouseLeave.new_version_link)
-            self.title_label.grid(row=0, column=0, padx=0, pady=0)
-        else:
-            self.root.title(Lang.translate("guiName") + old_message)
+            if self.latest_version is not None and self.current_version < self.latest_version:
+                self.root.title(Lang.translate("guiName") + new_message)
+                # Ajouter un label dans la barre de titre pour simuler un lien
+                self.title_label = Label(self.root, text=new_message)
+                self.title_label.configure(background="#0792ea", foreground="#FFFF00")
+                self.title_label.bind("<Button-1>", lambda event: self.static_method.open_new_version_link)
+                # Associer les fonctions aux événements de survol de la souris
+                self.title_label.bind("<Enter>", self.onMouseEnter.new_version_link)
+                self.title_label.bind("<Leave>", self.onMouseLeave.new_version_link)
+                self.title_label.grid(row=0, column=0, padx=0, pady=0)
+            else:
+                self.root.title(Lang.translate("guiName") + old_message)
 
         # Créer une Frame globale
         main_frame = tk.Frame(self.root, bg="#2C2C2C")

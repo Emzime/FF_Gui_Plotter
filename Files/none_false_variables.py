@@ -19,3 +19,6 @@ class NoneFalseVariables:
         self.bad_proof_found = False
         self.bad_plot_messages = False
         self.total_plot_created_messages = False
+
+        # Temporaire
+        self.version_Status = False
