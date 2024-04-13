@@ -81,7 +81,7 @@ class FFPlotterGUI:
             self.config_manager.update_config({"plotter_executable": selected_executable}, self.config_manager.config_file)
             # Mettre à jour le titre de la fenêtre avec le nom du plotter sélectionné
             plotter_name = os.path.splitext(selected_executable)[0]  # Récupérer le nom sans extension
-            self.interface.root.title(f"French Farmer Gui plotter {plotter_name}")
+            self.interface.root.title(Lang.translate("guiName") + plotter_name)
             # Réinitialiser les valeurs des combobox
             self.interface.compression_combobox['values'] = []
             self.interface.ram_qty_combobox['values'] = []
@@ -451,7 +451,7 @@ class FFPlotterGUI:
         ssd_temp2 = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp2move")
         ram_qty_gb = float(self.config_manager.read_config(self.config_manager.config_file).get("ram_qty"))
         gpu_1_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_1", "0"))
-        gpu_2_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_2", ""))
+        gpu_Qty_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_Qty", ""))
         maxtmp_value = str(self.config_manager.read_config(self.config_manager.config_file).get("maxtmp", ""))
         copylimit_value = str(self.config_manager.read_config(self.config_manager.config_file).get("copylimit", ""))
         maxcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("maxcopy", ""))
@@ -487,9 +487,9 @@ class FFPlotterGUI:
             ])
 
         # Ajoute les arguments liés au GPU 2
-        if gpu_2_value:
+        if gpu_Qty_value:
             command.extend([
-                "-g", gpu_2_value,
+                "-r", gpu_Qty_value,
             ])
 
         # Ajoute les arguments liés -Q
@@ -777,9 +777,9 @@ class FFPlotterGUI:
 
                     # Désactiver le combobox GPU 2 si moins de deux GPUs sont connectés
                     if len(self.interface.gpu_connected) < 2:
-                        self.interface.gpu_2_combobox.configure(state="disabled")
+                        self.interface.gpu_Qty_combobox.configure(state="disabled")
                         # Réinitialiser la valeur sélectionnée du deuxième GPU
-                        self.interface.gpu_2_value_var.set("")
+                        self.interface.gpu_Qty_value_var.set("")
 
                     # Vérifie le bouton check plot
                     if self.interface.plotter_gui.check_plot_status == Lang.translate("off"):

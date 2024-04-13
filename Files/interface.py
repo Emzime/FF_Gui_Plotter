@@ -1,4 +1,3 @@
-
 # interface.py
 import os
 import platform
@@ -10,7 +9,7 @@ from ttkthemes.themed_style import ThemedStyle
 
 from Files.translation import Lang
 from Files.version import CheckVersion
-from Files.discord_news import Discord
+from Files.FF_Team_messages import FFteam
 
 
 class Interface:
@@ -25,7 +24,7 @@ class Interface:
         self.onMouseEnter = OnMouseEnter(self.plotter_gui)
         self.onMouseLeave = OnMouseLeave(self.plotter_gui)
         self.newVersion = CheckVersion()
-        self.discord = Discord()
+        self.FFteam = FFteam(self)
 
         directory_path = os.path.dirname(os.path.dirname(__file__))
         # Récupère la valeur dans la configuration
@@ -66,6 +65,9 @@ class Interface:
         style.configure("TButton")
         style.configure("Custom.Horizontal.TProgressbar", troughcolor="#1C1C1C", background="#00DF03", thickness=10)
         style.configure('CustomSend.TButton', background='#9C9C9C')
+
+        # Titre de la fenêtre
+        self.root.title(Lang.translate("guiName") + current_plotter_name)
 
         # Ajouter le message de version à la fenêtre principale
         if self.plotter_gui.none_false_variable.version_Status is True:
@@ -316,14 +318,14 @@ class Interface:
         self.progress_label.update_idletasks()
 
         # Crée une Frame pour la progression du plot
-        news_plot_frame = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
-        news_plot_frame.grid(row=0, column=1, padx=(5, 0), pady=(0, 0), sticky="nsew")
+        self.news_plot_frame = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
+        self.news_plot_frame.grid(row=0, column=1, padx=(5, 0), pady=(0, 0), sticky="nsew")
 
         # Ajoutez des poids pour partager la hauteur
-        news_plot_frame.grid_rowconfigure(0, weight=1)
-        news_plot_frame.grid_rowconfigure(1, weight=1)
+        self.news_plot_frame.grid_rowconfigure(0, weight=1)
+        self.news_plot_frame.grid_rowconfigure(1, weight=1)
         # Ajoutez des poids pour partager la largeur
-        news_plot_frame.grid_columnconfigure(0, weight=1)
+        self.news_plot_frame.grid_columnconfigure(0, weight=1)
 
         # Créer une sous-frame pour le logo FF
         self.input_logo = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
@@ -669,7 +671,7 @@ class Interface:
         # Ligne 10 : GPU 1
         # Récupération des valeurs des GPU depuis la configuration
         gpu_1_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_1", ""))
-        gpu_2_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_2", ""))
+        gpu_Qty_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_Qty", ""))
         waitforcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("waitforcopy", ""))
 
         self.gpu_1_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text=Lang.translate("gpuOne"), anchor="center")
@@ -691,19 +693,19 @@ class Interface:
         self.gpu_1_combobox.bind("<Leave>", self.onMouseLeave.gpu_1_info)
 
         # Ligne 10 : GPU 2
-        self.gpu_2_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text=Lang.translate("gpuTwo"), anchor="center")
-        self.gpu_2_label.grid(row=1, column=1, padx=(0, 0), pady=(5, 0), sticky="n")
-        self.gpu_2_value_var = tk.StringVar(value=gpu_2_value)
+        self.gpu_Qty_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text=Lang.translate("gpuTwo"), anchor="center")
+        self.gpu_Qty_label.grid(row=1, column=1, padx=(0, 0), pady=(5, 0), sticky="n")
+        self.gpu_Qty_value_var = tk.StringVar(value=gpu_Qty_value)
 
-        self.gpu_2_combobox = ttk.Combobox(self.input_subframe_7, textvariable=self.gpu_2_value_var, width=5, state="readonly")
-        self.gpu_2_combobox.grid(row=2, column=1, padx=(0, 0), pady=(0, 5), sticky="n")
+        self.gpu_Qty_combobox = ttk.Combobox(self.input_subframe_7, textvariable=self.gpu_Qty_value_var, width=5, state="readonly")
+        self.gpu_Qty_combobox.grid(row=2, column=1, padx=(0, 0), pady=(0, 5), sticky="n")
         # Assignation des valeurs corrigées aux combobox
-        self.gpu_2_value_var.set(gpu_2_value)
+        self.gpu_Qty_value_var.set(gpu_Qty_value)
         # Associez la fonction à l'événement de changement de la combobox
-        self.gpu_2_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.updateValues.gpu_2_config())
+        self.gpu_Qty_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.updateValues.gpu_Qty_config())
         # Associer les fonctions aux événements de survol de la souris
-        self.gpu_2_combobox.bind("<Enter>", self.onMouseEnter.gpu_2_info)
-        self.gpu_2_combobox.bind("<Leave>", self.onMouseLeave.gpu_2_info)
+        self.gpu_Qty_combobox.bind("<Enter>", self.onMouseEnter.gpu_Qty_info)
+        self.gpu_Qty_combobox.bind("<Leave>", self.onMouseLeave.gpu_Qty_info)
 
         # Ligne 11 : Max number of plots to cache in tmpdir -Q
         self.waitforcopy_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text=Lang.translate("w_Flag"), anchor="center")
@@ -835,9 +837,24 @@ class Interface:
         log_frame = tk.Frame(right_column, bg="#1C1C1C")
         log_frame.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
 
-        # Créer un widget pour afficher les messages
-        self.message_label = tk.Label(news_plot_frame, text=self.discord.news(), background="#1C1C1C", foreground="#ffffff")
-        self.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Créer un widget Text pour afficher les messages
+        self.message_text = tk.Text(self.news_plot_frame, background="#1C1C1C", foreground="#ffffff", borderwidth=0, height=3)
+        self.message_text.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nsew")
+
+        # Ajouter une scrollbar verticale
+        scrollbar = tk.Scrollbar(self.news_plot_frame, orient="vertical", command=self.message_text.yview)
+        scrollbar.grid(row=0, column=1, rowspan=3, sticky="ns")
+
+        # Configurer le Text pour utiliser la scrollbar
+        self.message_text.config(yscrollcommand=scrollbar.set)
+
+        # Afficher les messages dans le Text
+        self.message_text.insert("1.0", self.FFteam.messages())
+        # Désactiver l'édition du Text
+        self.message_text.configure(state="disabled")
+
+        # Initialise
+        self.message_label = None
 
         # Ajoutez des poids pour partager la largeur
         log_frame.grid_columnconfigure(0, weight=1)
@@ -941,22 +958,26 @@ class Interface:
         # Créer une liste pour stocker les valeurs des GPUs connectés
         connected_gpus = []
 
-        # Ajouter les GPUs connectés à la liste
+        # Ajouter les IDs des GPUs connectés à la liste
         for gpu in available_gpus:
             connected_gpus.append(str(gpu.id))
 
-        # Mettre à jour les valeurs des combobox avec les GPUs connectés
+        # Mettre à jour les valeurs des combobox avec les IDs des GPUs connectés
         self.gpu_1_combobox['values'] = connected_gpus
-        self.gpu_2_combobox['values'] = connected_gpus
-        self.gpu_connected = connected_gpus
 
-        # Désactiver le combobox GPU 2 si moins de deux GPUs sont connectés
+        # Générer la liste des quantités de GPU disponibles (de 1 à n)
+        qty_list = [str(i+1) for i in range(len(connected_gpus))]
+
+        # Mettre à jour les valeurs du combobox GPU Qty avec les quantités disponibles
+        self.gpu_Qty_combobox['values'] = qty_list
+
+        # Désactiver le combobox GPU Qty s'il n'y a qu'un seul GPU connecté
         if len(connected_gpus) < 2:
-            self.gpu_2_combobox.configure(state="disabled")
-            # Réinitialiser la valeur sélectionnée du deuxième GPU
-            self.gpu_2_value_var.set("")
+            self.gpu_Qty_combobox.configure(state="disabled")
+            # Réinitialiser la valeur sélectionnée du combobox GPU Qty
+            self.gpu_Qty_value_var.set("")
         else:
-            self.gpu_2_combobox.configure(state="normal")
+            self.gpu_Qty_combobox.configure(state="normal")
 
 
 class UpdateValues:
@@ -985,10 +1006,10 @@ class UpdateValues:
         # Mise à jour du fichier de configuration
         self.plotter_gui.interface.config_manager.update_config({"gpu_1": selected_gpu_1}, self.plotter_gui.interface.config_manager.config_file)
 
-    def gpu_2_config(self):
-        selected_gpu_2 = self.plotter_gui.interface.gpu_2_value_var.get()
+    def gpu_Qty_config(self):
+        selected_gpu_Qty = self.plotter_gui.interface.gpu_Qty_value_var.get()
         # Mise à jour du fichier de configuration
-        self.plotter_gui.interface.config_manager.update_config({"gpu_2": selected_gpu_2}, self.plotter_gui.interface.config_manager.config_file)
+        self.plotter_gui.interface.config_manager.update_config({"gpu_Qty": selected_gpu_Qty}, self.plotter_gui.interface.config_manager.config_file)
 
     def waitforcopy_config(self):
         waitforcopy = self.plotter_gui.interface.waitforcopy_var.get()
@@ -1138,6 +1159,8 @@ class OnMouseEnter:
         # Création des instances
         self.plotter_gui = ff_plotter_gui
         self.static_method = ff_plotter_gui.static_method
+        # Initialiser message_label à None
+        self.message_label = None
 
     def maxcopy_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1145,8 +1168,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.maxcopy_label.configure(foreground="#00DF03")
         self.plotter_gui.interface.maxcopy_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("numberHddCopy_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("numberHddCopy_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def copylimit_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1154,8 +1184,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.copylimit_label.configure(foreground="#00DF03")
         self.plotter_gui.interface.copylimit_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("numberParallelCopy_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("numberParallelCopy_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def maxtmp_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1163,8 +1200,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.maxtmp_label.configure(foreground="#00DF03")
         self.plotter_gui.interface.maxtmp_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("numberCachePlots_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("numberCachePlots_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def waitforcopy_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1172,17 +1216,31 @@ class OnMouseEnter:
         self.plotter_gui.interface.waitforcopy_label.configure(foreground="#00DF03")
         self.plotter_gui.interface.waitforcopy_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("waitForCopy_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("waitForCopy_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
-    def gpu_2_info(self, event):
+    def gpu_Qty_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-        self.plotter_gui.interface.gpu_2_label.configure(foreground="#00DF03")
-        self.plotter_gui.interface.gpu_2_combobox.configure(cursor="hand2")
+        self.plotter_gui.interface.gpu_Qty_label.configure(foreground="#00DF03")
+        self.plotter_gui.interface.gpu_Qty_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("secondGpuID_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("secondGpuID_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def gpu_1_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1190,8 +1248,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.gpu_1_label.configure(foreground="#00DF03")
         self.plotter_gui.interface.gpu_1_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("firstGpuID_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("firstGpuID_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def hdd_dir_listbox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1199,8 +1264,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.hdd_dir_label.configure(foreground="#00DF03")
         self.plotter_gui.interface.hdd_dir_listbox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("hddDir_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("hddDir_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def ssd_temp2move_entry(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1208,8 +1280,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.ssd_temp2move_label.configure(foreground="#00DF03")
         self.plotter_gui.interface.ssd_temp2move_entry.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("temp2move_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("temp2move_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def ssd_temp_entry(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1217,15 +1296,29 @@ class OnMouseEnter:
         self.plotter_gui.interface.ssd_temp_label.configure(foreground="#00DF03")
         self.plotter_gui.interface.ssd_temp_entry.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("temp_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("temp_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def new_version_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("downloadNewVersion"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("downloadNewVersion"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def site_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1241,8 +1334,15 @@ class OnMouseEnter:
         # Affiche une main quand on passe la souris sur le lien
         self.plotter_gui.interface.logo_label.configure(background="#1C1C1C", foreground="#0792ea", cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("joinWebsite_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("joinWebsite_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def discord_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1258,8 +1358,15 @@ class OnMouseEnter:
         # Affiche une main quand on passe la souris sur le lien
         self.plotter_gui.interface.logo_label_discord.configure(background="#1C1C1C", foreground="#0792ea", cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("joinDiscord_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("joinDiscord_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def check_threshold_value_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1268,8 +1375,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.check_threshold_value_label.configure(cursor="hand2", foreground="#00DF03")
         self.plotter_gui.interface.check_threshold_value_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("threshold_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("threshold_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def farmer_key_entry(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1278,8 +1392,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.farmer_key_label.configure(cursor="hand2", foreground="#00DF03")
         self.plotter_gui.interface.farmer_key_entry.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("farmerKey_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("farmerKey_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def contract_entry(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1288,8 +1409,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.contract_label.configure(cursor="hand2", foreground="#00DF03")
         self.plotter_gui.interface.contract_entry.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("contract_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("contract_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def ram_qty_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1298,8 +1426,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.ram_qty_label.configure(cursor="hand2", foreground="#00DF03")
         self.plotter_gui.interface.ram_qty_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("ram_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("ram_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def compression_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1308,8 +1443,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.compression_label.configure(cursor="hand2", foreground="#00DF03")
         self.plotter_gui.interface.compression_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("compression_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("compression_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def check_plot_value_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1318,8 +1460,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.check_plot_value_label.configure(cursor="hand2", foreground="#00DF03")
         self.plotter_gui.interface.check_plot_value_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("checkPlot_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("checkPlot_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def plotter_path_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1328,8 +1477,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.plotter_path_label.configure(cursor="hand2", foreground="#00DF03")
         self.plotter_gui.interface.plotter_path_combobox.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("plotter_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("plotter_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def logging_button(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1338,8 +1494,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.logging_label.configure(cursor="hand2", foreground="#0792ea")
         self.plotter_gui.interface.logging_button.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("logging_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("logging_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def check_button(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1348,8 +1511,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.check_label.configure(cursor="hand2", foreground="#0792ea")
         self.plotter_gui.interface.check_button.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("checkButton_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("delPlotsButton_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
     def delPlot_button(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1358,8 +1528,15 @@ class OnMouseEnter:
         self.plotter_gui.interface.delPlot_label.configure(cursor="hand2", foreground="#0792ea")
         self.plotter_gui.interface.delPlot_button.configure(cursor="hand2")
         # Affiche le message en haut au centre
-        self.plotter_gui.interface.message_label.configure(text=Lang.translate("delPlotsButton_help"), highlightthickness=1, background="#0792ea", foreground="#000000")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=0, pady=0, sticky="nsew")
+        self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
+        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
+        self.plotter_gui.interface.message_label.configure(
+            text=Lang.translate("delPlotsButton_help"),
+            highlightthickness=1,
+            background="#00DF03",
+            foreground="#000000",
+            font=("Arial", 12)
+        )
 
 
 class OnMouseLeave:
@@ -1367,79 +1544,80 @@ class OnMouseLeave:
         # Création des instances
         self.plotter_gui = ff_plotter_gui
         self.static_method = ff_plotter_gui.static_method
-        self.discord = Discord()
+        # Instanciation de FFteam
+        self.FFteam = FFteam(self)
 
     def maxcopy_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.maxcopy_label.configure(foreground="#0792ea", cursor="arrow")
         self.plotter_gui.interface.maxcopy_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def copylimit_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.copylimit_label.configure(foreground="#0792ea", cursor="arrow")
         self.plotter_gui.interface.copylimit_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def maxtmp_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.maxtmp_label.configure(foreground="#0792ea", cursor="arrow")
         self.plotter_gui.interface.maxtmp_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def waitforcopy_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.waitforcopy_label.configure(foreground="#0792ea", cursor="arrow")
         self.plotter_gui.interface.waitforcopy_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
-    def gpu_2_info(self, event):
+    def gpu_Qty_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-        self.plotter_gui.interface.gpu_2_label.configure(foreground="#0792ea", cursor="arrow")
-        self.plotter_gui.interface.gpu_2_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        self.plotter_gui.interface.gpu_Qty_label.configure(foreground="#0792ea", cursor="arrow")
+        self.plotter_gui.interface.gpu_Qty_combobox.configure(cursor="arrow")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def gpu_1_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.gpu_1_label.configure(foreground="#0792ea", cursor="arrow")
         self.plotter_gui.interface.gpu_1_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def hdd_dir_listbox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.hdd_dir_label.configure(foreground="#0792ea", cursor="arrow")
         self.plotter_gui.interface.hdd_dir_listbox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def ssd_temp2move_entry(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.ssd_temp2move_label.configure(foreground="#0792ea", cursor="arrow")
         self.plotter_gui.interface.ssd_temp2move_entry.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def ssd_temp_entry(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.ssd_temp_label.configure(foreground="#0792ea", cursor="arrow")
         self.plotter_gui.interface.ssd_temp_entry.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def new_version_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1453,128 +1631,113 @@ class OnMouseLeave:
         self.plotter_gui.interface.logo_label.configure(image=self.plotter_gui.interface.input_logo_img)
         # Changer les autres propriétés du label après avoir quitté le survol de la souris
         self.plotter_gui.interface.logo_label.configure(background="#1C1C1C", foreground="#BFBFBF", cursor="arrow")
-        # Réinitialisation
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def discord_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         # Réaffecter l'image d'origine
         self.plotter_gui.interface.logo_label_discord.configure(image=self.plotter_gui.interface.input_logo_discord_img)
-        # Réinitialisation
         self.plotter_gui.interface.logo_label_discord.configure(background="#1C1C1C", foreground="#BFBFBF", cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def check_threshold_value_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         self.plotter_gui.interface.check_threshold_value_label.config(cursor="arrow", background="#1C1C1C", foreground="#0792ea")
         self.plotter_gui.interface.check_threshold_value_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def farmer_key_entry(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         self.plotter_gui.interface.farmer_key_label.config(cursor="arrow", background="#1C1C1C", foreground="#0792ea")
         self.plotter_gui.interface.farmer_key_entry.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def contract_entry(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         self.plotter_gui.interface.contract_label.config(cursor="arrow", background="#1C1C1C", foreground="#0792ea")
         self.plotter_gui.interface.contract_entry.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def ram_qty_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         self.plotter_gui.interface.ram_qty_label.config(cursor="arrow", background="#1C1C1C", foreground="#0792ea")
         self.plotter_gui.interface.ram_qty_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def compression_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         self.plotter_gui.interface.compression_label.config(cursor="arrow", background="#1C1C1C", foreground="#0792ea")
         self.plotter_gui.interface.compression_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def check_plot_value_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         self.plotter_gui.interface.check_plot_value_label.config(cursor="arrow", background="#1C1C1C", foreground="#0792ea")
         self.plotter_gui.interface.check_plot_value_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def plotter_path_combobox(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         self.plotter_gui.interface.plotter_path_label.config(cursor="arrow", background="#1C1C1C", foreground="#0792ea")
         self.plotter_gui.interface.plotter_path_combobox.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def logging_button(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         if self.plotter_gui.logs_status == Lang.translate("on"):
             self.plotter_gui.interface.logging_label.config(cursor="arrow", foreground="#00DF03")
         else:
             self.plotter_gui.interface.logging_label.config(cursor="arrow", foreground="#F10000")
 
         self.plotter_gui.interface.logging_button.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def check_button(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         if self.plotter_gui.check_plot_status == Lang.translate("on"):
             self.plotter_gui.interface.check_label.config(cursor="arrow", foreground="#00DF03")
         else:
             self.plotter_gui.interface.check_label.config(cursor="arrow", foreground="#F10000")
 
         self.plotter_gui.interface.check_button.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def delPlot_button(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-
-        # Réinitialisation
         if self.plotter_gui.delCompressedPlot_status == Lang.translate("on"):
             self.plotter_gui.interface.delPlot_label.config(cursor="arrow", foreground="#00DF03")
         else:
             self.plotter_gui.interface.delPlot_label.config(cursor="arrow", foreground="#F10000")
 
-        self.plotter_gui.interface.delPlot_button.configure(cursor="arrow")
-        self.plotter_gui.interface.message_label.configure(text=self.discord.news(), highlightthickness=0, background="#1C1C1C", foreground="#ffffff")
-        self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nw")
+        self.plotter_gui.interface.check_button.configure(cursor="arrow")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
+
+    def update_message_text(self):
+        # Détruire le Label s'il existe déjà
+        if self.plotter_gui.interface.message_label is not None:
+            self.plotter_gui.interface.message_label.destroy()
+            # Réinitialiser message_label à None après destruction
+            self.plotter_gui.interface.message_label = None

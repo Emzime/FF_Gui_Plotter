@@ -101,7 +101,7 @@ class Lists:
             self.interface.add_hdd_dir_button,
             self.interface.remove_hdd_dir_button,
             self.interface.gpu_1_combobox,
-            self.interface.gpu_2_combobox,
+            self.interface.gpu_Qty_combobox,
             self.interface.waitforcopy_combobox,
             self.interface.maxtmp_combobox,
             self.interface.copylimit_combobox,
