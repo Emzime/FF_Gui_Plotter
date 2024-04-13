@@ -5,14 +5,20 @@ import os
 class ConfigManager:
     # Nom du fichier de configuration
     config_file = "config.txt"
+    # Nom du fichier des statistiques
     config_stats = "stats.txt"
-
+    # Nom du fichier de log sans extension
+    log_name = "FF_Log_"
+    # Nom du fichier de log des erreurs sans extension
+    log_error_name = "FF_Log_Error_"
     # Chemin du répertoire où est situé le script
     directory_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # Chemin du répertoire + répertoire des plotters
     plotter_directory = os.path.join(directory_path, "Plotter")
 
     def __init__(self):
         self.defaults = {
+            "last_check_date": "",
             "compression": "29",
             "ram_qty": "128",
             "plotter_executable": "",
@@ -23,6 +29,7 @@ class ConfigManager:
             "contract": "",
             "farmer_key": "",
             "progress_status": "on",
+            "delCompressedPlot_status": "off",
             "logs_status": "off",
             "check_plot_status": "off",
             "check_plot_value": "30",

@@ -3,6 +3,7 @@ import os
 import shutil
 import psutil
 import platform
+from Files.translation import Lang
 
 
 class FindMethod:
@@ -18,7 +19,7 @@ class FindMethod:
                 if process_info['name'] == process_name:
                     return process_info['pid']
             except Exception as e:
-                self.queue_logs.log_queue_errors.put(f"Récupération de l'identifiant du processus {process_name}: {str(e)}")
+                self.queue_logs.log_queue_errors.put(Lang.translate("processIdentifierRetrieval").format(process_name=process_name, e=str(e)))
 
         # Si le processus n'a pas été trouvé, retourne None
         return None
