@@ -1514,7 +1514,7 @@ class OnMouseEnter:
         self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
         self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
         self.plotter_gui.interface.message_label.configure(
-            text=Lang.translate("delPlotsButton_help"),
+            text=Lang.translate("checkButton_help"),
             highlightthickness=1,
             background="#00DF03",
             foreground="#000000",
