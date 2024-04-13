@@ -26,7 +26,7 @@ def build_executable():
         ("Images/off.png", "Images/"),
         ("Images/on.png", "Images/"),
         ("Files/config_manager.py", "Files/"),
-        ("Files/discord_news.py", "Files/"),
+        ("Files/FF_Team_messages.py", "Files/"),
         ("Files/find_method.py", "Files/"),
         ("Files/initialize_variables.py", "Files/"),
         ("Files/interface.py", "Files/"),
@@ -59,7 +59,7 @@ def build_executable():
         ("Images/off.png", "Images/"),
         ("Images/on.png", "Images/"),
         ("Files/config_manager.py", "Files/"),
-        ("Files/discord_news.py", "Files/"),
+        ("Files/FF_Team_messages.py", "Files/"),
         ("Files/find_method.py", "Files/"),
         ("Files/initialize_variables.py", "Files/"),
         ("Files/interface.py", "Files/"),
@@ -81,7 +81,6 @@ def build_executable():
         ("Plotter/cuda_plot_k32", "Plotter/"),
         ("Plotter/cuda_plot_k32_v3", "Plotter/"),
         ("Plotter/bladebit-cuda-v3.1.0-centos-x86-64.tar", "Plotter/"),
-        ("Plotter/bladebit-cuda-v3.1.0-ubuntu-arm64.tar", "Plotter/"),
         ("Plotter/bladebit-cuda-v3.1.0-ubuntu-x86-64.tar", "Plotter/")
     ]
 

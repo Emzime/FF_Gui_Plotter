@@ -35,7 +35,7 @@ class ConfigManager:
             "check_plot_value": "30",
             "check_threshold_value": "80",
             "gpu_1": "",
-            "gpu_2": "",
+            "gpu_Qty": "",
             "waitforcopy": "",
             "maxtmp": "",
             "copylimit": "",

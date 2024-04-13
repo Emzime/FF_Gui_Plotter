@@ -8,6 +8,7 @@ translations = {
     "badProofPercent": "La parcelle vient d'être supprimé car elle n'avait que {requested_proof}%",
     "goodProofPercent": "Pourcentage de preuves de la dernière parcelle créé: {self.initialize_variables.percent_proof}%",
     "progressMonitoringError": "Erreur lors de la surveillance de la progression: {e}",
+    "gitTextError": "Erreur lors de la récupération du contenu du fichier de news: {e}",
     "browse_select_t1": "Sélectionnez le disque temporaire -t1 (NVME/SSD)",
     "browse_select_t2": "Sélectionnez le disque temporaire 2 -t2 (NVME/SSD)",
     "browse_select_d": "Sélectionnez un dossier de destination -d",
@@ -67,7 +68,7 @@ translations = {
     "add": "Ajouter",
     "remove": "Supprimer",
     "gpuOne": "GPU 1*",
-    "gpuTwo": "GPU 2*",
+    "gpuTwo": "Nb GPU*",
     "Q_Flag": "-Q*",
     "A_Flag": "-A*",
     "W_Flag": "-W*",
@@ -155,8 +156,8 @@ translations = {
         "ID de la première carte graphique"
     ),
     "secondGpuID_help": (
-        "Périphérique CUDA (par défaut = 1)\n"
-        "ID de la seconde carte graphique\n"
+        "Nombre de périphériques CUDA (par défaut = 1)\n"
+        "Quantité de carte graphique à utiliser pour la création des parcelles.\n"
         "Cette option ne s'active que si ton système comporte plus d'une carte graphique"
     ),
     "waitForCopy_help": (
@@ -214,7 +215,7 @@ translations = {
         "Tu peux récupérer ta clé publique en tapant la commande cli \"chia keys show\" dans un terminal, note la \"Farmer public key\" et inscrit la dans la case \"Clé publique\""
     ),
     "hddDir_help": (
-        "Destinations finales (default = <tmpdir>, remote = @HOST)\n"
+        "Destinations finales (default = <tmpdir>, remote = @HOST Non disponible)\n"
         "Ajoute les disques que tu veux remplir de parcelles"
     ),
     "temp2move_help": (
