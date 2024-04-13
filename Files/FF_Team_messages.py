@@ -15,7 +15,7 @@ class FFteam:
     @staticmethod
     def get_markdown_from_github():
         # URL du fichier Markdown sur GitHub
-        github_url = 'https://raw.githubusercontent.com/Emzime/FF_Gui_Plotter/main/Files/FFteam_message.md'
+        github_url = 'https://raw.githubusercontent.com/FrenchFamers/gui-plotter-annonce/main/FFteam_message.md'
 
         try:
             # Effectuer une requête GET pour récupérer le contenu du fichier Markdown
