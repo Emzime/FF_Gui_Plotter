@@ -33,7 +33,7 @@ git clone https://github.com/Emzime/FF_Gui_Plotter.git
 cd FF_Gui_Plotter
 py -m venv venv
 . ./venv/Scripts/activate
-pip install psutil ttkthemes GPUtil requests logging datetime requests
+pip install psutil ttkthemes GPUtil requests logging datetime
 py main.py
 ```
 
