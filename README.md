@@ -2,8 +2,7 @@ Work in progress...
 
 A simple graphical interface for easy plot creation using Bladebit or gigaHorse
 
-![image](https://github.com/Emzime/FF_Gui_Plotter/assets/3422040/eb4f6119-a2d2-4daa-9eac-d36b118fdc54)
-
+![image](https://github.com/Emzime/FF_Gui_Plotter/assets/3422040/e5f1d9ac-41f9-4a90-95bd-ae68a438fc93)
 
 Linux installation:
 ```
