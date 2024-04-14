@@ -1,1 +1,1 @@
-je vous présente le nouveau bot permettant d'envoyer des message directement sur l'application directement depuis un channel discord 🎊 🎉
+je vous présente le nouveau bot permettant d'envoyer des message directement sur l'application directement depuis un channel discord 🎊 🎉 😁
