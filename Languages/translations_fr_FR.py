@@ -1,4 +1,6 @@
 translations = {
+    "open": "Ouvrir",
+    "close": "Fermer",
     "githubResponseError": "Erreur lors de la récupération des données depuis l'API GitHub. Veuillez réessayer plus tard.",
     "versionNotFound": "Le fichier {version} n'existe pas",
     "guiName": "French Farmer Gui - ",

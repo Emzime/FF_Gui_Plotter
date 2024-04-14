@@ -5,11 +5,12 @@ import tkinter as tk
 from tkinter import ttk, Frame, Label
 
 import GPUtil
+from PIL import Image, ImageTk
 from ttkthemes.themed_style import ThemedStyle
 
+from Files.FF_Team_messages import FFteam
 from Files.translation import Lang
 from Files.version import CheckVersion
-from Files.FF_Team_messages import FFteam
 
 
 class Interface:
@@ -80,7 +81,7 @@ class Interface:
                 # Ajouter un label dans la barre de titre pour simuler un lien
                 self.title_label = Label(self.root, text=new_message)
                 self.title_label.configure(background="#0792ea", foreground="#FFFF00")
-                self.title_label.bind("<Button-1>", lambda event: self.static_method.open_new_version_link)
+                self.title_label.bind("<Button-1>", lambda event: self.static_method.open_new_version_link(event))
                 # Associer les fonctions aux événements de survol de la souris
                 self.title_label.bind("<Enter>", self.onMouseEnter.new_version_link)
                 self.title_label.bind("<Leave>", self.onMouseLeave.new_version_link)
@@ -92,47 +93,40 @@ class Interface:
         main_frame = tk.Frame(self.root, bg="#2C2C2C")
         main_frame.grid(row=1, column=0, sticky="nsew")
 
-        # Ajouter la gestion de poids pour ligne 0 de main_frame (redimensionnement vertical)
-        main_frame.grid_rowconfigure(0, weight=0)
-        main_frame.grid_rowconfigure(1, weight=1)
-
-        # Ajoutez des poids pour partager la largeur
+        # Redimensionne la frame horizontalement
         main_frame.grid_columnconfigure(1, weight=1)
+
+        # Redimensionne la frame verticalement
+        main_frame.grid_rowconfigure(1, weight=1)
 
         # Créez la Frame supérieure (top_column)
         top_left_column = tk.Frame(main_frame, bg="#2C2C2C")
         top_left_column.grid(row=0, column=0, padx=(10, 5), pady=(0, 0), sticky="nsew")
 
-        # Ajoutez des poids pour centrer verticalement
-        top_left_column.grid_rowconfigure(0, weight=1)
-
-        # Ajoutez des poids pour partager la largeur
+        # Redimensionne la frame horizontalement
         top_left_column.grid_columnconfigure(0, weight=1)
+
+        # Redimensionne la frame verticalement
+        top_left_column.grid_rowconfigure(0, weight=0)
 
         # Bouton pour activer/désactiver la journalisation (à droite)
         logging_frame = tk.Frame(top_left_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
         logging_frame.grid(row=0, column=0, padx=0, pady=(10, 5), sticky="nsew")
 
-        # Ajoutez des poids pour partager la largeur
+        # Redimensionne la frame horizontalement
         logging_frame.grid_columnconfigure(0, weight=1)
-
-        # Ajoutez des poids pour centrer verticalement dans logging_frame
-        logging_frame.grid_rowconfigure(0, weight=1)
 
         # Créez un cadre pour partager la largeur entre logging_label et logging_button
         inner_frame = tk.Frame(logging_frame, bg="#1C1C1C")
         inner_frame.grid(row=1, column=0, padx=10, pady=0, sticky="nsew")
 
-        # Ajoutez des poids pour partager la largeur
+        # Redimensionne la frame horizontalement
         inner_frame.grid_columnconfigure(0, weight=1)
         inner_frame.grid_columnconfigure(1, weight=1)
 
-        # Ajoutez des poids pour centrer verticalement dans inner_frame
-        inner_frame.grid_rowconfigure(0, weight=1)
-
         # Bouton on / off des fichiers de logs
         self.logging_label = tk.Label(inner_frame, background="#1C1C1C", border=0, text=Lang.translate("logFile"))
-        self.logging_label.grid(row=0, column=0, padx=(5, 5), pady=(0, 0), sticky="ew")
+        self.logging_label.grid(row=0, column=0, padx=(5, 5), pady=(15, 8), sticky="ew")
 
         self.logging_button = tk.Button(inner_frame, border=0, command=self.buttonSwitch.logs)
         self.logging_button.configure(background="#1C1C1C", activebackground="#1C1C1C", border=0)
@@ -154,15 +148,13 @@ class Interface:
         if self.plotter_gui.logs_status == Lang.translate("on"):
             self.logging_button.config(image=self.logging_button_on, background="#1C1C1C")
             self.logging_label.config(foreground="#00B34D")
-            self.logging_label.grid_rowconfigure(0, weight=1)
         else:
             self.logging_button.config(image=self.logging_button_off, background="#1C1C1C")
             self.logging_label.config(foreground="#F10000")
-            self.logging_label.grid_rowconfigure(0, weight=1)
 
         # Bouton on / off de plot check
         self.check_label = tk.Label(inner_frame, background="#1C1C1C", border=0, text=Lang.translate("plotCheck"))
-        self.check_label.grid(row=0, column=1, padx=(5, 5), pady=(0, 0), sticky="ew")
+        self.check_label.grid(row=0, column=1, padx=(5, 5), pady=(15, 0), sticky="ew")
 
         self.check_button = tk.Button(inner_frame, border=0, command=self.buttonSwitch.check)
         self.check_button.grid(row=1, column=1, padx=(5, 5), pady=(5, 20), sticky="ew")
@@ -186,16 +178,12 @@ class Interface:
                 self.check_button.config(image=self.check_button_on, background="#1C1C1C")
                 self.check_label.config(foreground="#00B34D")
                 self.plotter_gui.check_plot_status = Lang.translate("on")
-                # Ajoutez des poids pour partager la hauteur
-                self.check_label.grid_rowconfigure(0, weight=1)
                 # Mise à jour du fichier de configuration
                 self.plotter_gui.config_manager.update_config({"check_plot_status": Lang.translate("on")}, self.config_manager.config_file)
             else:
                 self.check_button.config(image=self.check_button_off, background="#1C1C1C")
                 self.check_label.config(foreground="#F10000")
                 self.plotter_gui.check_plot_status = Lang.translate("off")
-                # Ajoutez des poids pour partager la hauteur
-                self.check_label.grid_rowconfigure(0, weight=1)
                 # Mise à jour du fichier de configuration
                 self.plotter_gui.config_manager.update_config({"check_plot_status": Lang.translate("off")}, self.config_manager.config_file)
         else:
@@ -203,16 +191,12 @@ class Interface:
             self.check_button.config(image=self.check_button_off, background="#1C1C1C")
             self.check_label.config(foreground="#F10000")
             self.plotter_gui.check_plot_status = Lang.translate("off")
-            # Ajoutez des poids pour partager la hauteur
-            self.check_label.grid_rowconfigure(0, weight=1)
             # Mise à jour du fichier de configuration
             self.plotter_gui.config_manager.update_config({"check_plot_status": Lang.translate("off")}, self.config_manager.config_file)
 
         # Bouton on / off de suppression des anciens plots
         self.delPlot_label = tk.Label(inner_frame, background="#1C1C1C", border=0, text=Lang.translate("delPlot"))
-        self.delPlot_label.grid(row=0, column=2, padx=(5, 5), pady=(0, 0), sticky="ew")
-        # Ajoutez des poids pour partager la hauteur
-        self.delPlot_label.grid_rowconfigure(0, weight=1)
+        self.delPlot_label.grid(row=0, column=2, padx=(5, 5), pady=(15, 0), sticky="ew")
 
         self.delPlot_button = tk.Button(inner_frame, border=0, command=self.buttonSwitch.del_plot)
         self.delPlot_button.grid(row=1, column=2, padx=(5, 5), pady=(5, 20), sticky="ew")
@@ -243,22 +227,15 @@ class Interface:
         top_right_column = tk.Frame(main_frame, bg="#1C1C1C")
         top_right_column.grid(row=0, column=1, padx=(5, 10), pady=(10, 5), sticky="nsew")
 
-        # Ajoutez des poids pour partager la hauteur
-        top_right_column.grid_rowconfigure(0, weight=1)
-        top_right_column.grid_rowconfigure(1, weight=1)
-        # Ajoutez des poids pour partager la largeur
+        # Redimensionne la frame horizontalement
         top_right_column.grid_columnconfigure(0, weight=0)
         top_right_column.grid_columnconfigure(1, weight=1)
 
         # Crée une Frame pour la progression du plot (à gauche)
         progress_current_plot_frame = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
         progress_current_plot_frame.grid(row=0, column=0, padx=(0, 0), pady=(0, 0), sticky="nsew")
-        # Ajoutez des poids pour partager la hauteur
-        progress_current_plot_frame.grid_rowconfigure(0, weight=1)
-        progress_current_plot_frame.grid_rowconfigure(1, weight=1)
-        progress_current_plot_frame.grid_rowconfigure(2, weight=1)
-        progress_current_plot_frame.grid_rowconfigure(3, weight=1)
-        # Ajoutez des poids pour partager la largeur
+
+        # Redimensionne la frame horizontalement
         progress_current_plot_frame.grid_columnconfigure(0, weight=0)
         progress_current_plot_frame.grid_columnconfigure(1, weight=1)
         progress_current_plot_frame.grid_columnconfigure(2, weight=0)
@@ -321,11 +298,8 @@ class Interface:
         self.news_plot_frame = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
         self.news_plot_frame.grid(row=0, column=1, padx=(5, 0), pady=(0, 0), sticky="nsew")
 
-        # Ajoutez des poids pour partager la hauteur
-        self.news_plot_frame.grid_rowconfigure(0, weight=1)
-        self.news_plot_frame.grid_rowconfigure(1, weight=1)
-        # Ajoutez des poids pour partager la largeur
-        self.news_plot_frame.grid_columnconfigure(0, weight=1)
+        # Redimensionne la frame horizontalement
+        self.news_plot_frame.grid_columnconfigure(1, weight=1)
 
         # Créer une sous-frame pour le logo FF
         self.input_logo = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
@@ -338,8 +312,6 @@ class Interface:
         # Créez un label pour afficher l'image
         self.logo_label = ttk.Label(self.input_logo, image=self.input_logo_img, background="#1C1C1C", anchor="center")
         self.logo_label.grid(row=0, column=1, padx=(5, 5), pady=(7, 0), sticky="w")
-        # Ajoutez des poids pour partager la hauteur
-        self.logo_label.grid_rowconfigure(0, weight=1)
 
         # Assurez-vous que l'image ne soit pas collectée par le garbage collector
         self.logo_label.photo = self.input_logo_img
@@ -360,8 +332,6 @@ class Interface:
         # Créez un label pour afficher l'image
         self.logo_label_discord = ttk.Label(self.input_logo_discord, image=self.input_logo_discord_img, background="#1C1C1C", anchor="center")
         self.logo_label_discord.grid(row=0, column=1, padx=(5, 5), pady=(5, 5), sticky="w")
-        # Ajoutez des poids pour partager la hauteur
-        self.logo_label_discord.grid_rowconfigure(0, weight=1)
 
         # Assurez-vous que l'image ne soit pas collectée par le garbage collector
         self.logo_label_discord.photo = self.input_logo_discord_img
@@ -375,7 +345,7 @@ class Interface:
         left_column = tk.Frame(main_frame, bg="#565656", highlightthickness=1, highlightbackground="#565656")
         left_column.grid(row=1, column=0, padx=(10, 5), pady=(0, 10), sticky="nsew")
 
-        # Ajoutez des poids pour partager la hauteur
+        # Redimensionne la frame verticalement
         left_column.grid_rowconfigure(0, weight=1)
 
         # Créez une Frame pour les labels et les entrées
@@ -826,40 +796,67 @@ class Interface:
         right_column = tk.Frame(main_frame, bg="#565656", highlightthickness=1, highlightbackground="#565656")
         right_column.grid(row=1, column=1, padx=(5, 10), pady=(0, 10), sticky="nsew")
 
-        # Ajoutez des poids pour partager la hauteur
+        # Redimensionne la frame verticalement
         right_column.grid_rowconfigure(0, weight=0)
         right_column.grid_rowconfigure(1, weight=1)
 
-        # Ajoutez des poids pour partager la largeur
+        # Redimensionne la frame horizontalement
         right_column.grid_columnconfigure(0, weight=1)
 
         # Créer une Frame pour les journaux
         log_frame = tk.Frame(right_column, bg="#1C1C1C")
         log_frame.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
 
+        # Chargez l'image et redimensionnez-la
+        self.close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "open.png"))
+        icon_image = Image.open(self.close_img_path)
+        # Redimensionnez l'image
+        icon_image = icon_image.resize((40, 40))
+        self.icon_photo = ImageTk.PhotoImage(icon_image)
+
+        # Ajouter une icône
+        self.expand_button = ttk.Label(self.news_plot_frame, image=self.icon_photo, background="#1C1C1C", anchor="center")
+        self.expand_button.grid(row=0, column=0, padx=(3, 5), pady=(3, 0), sticky="nw")
+        # Définir la largeur du widget en ajustant les marges
+        self.expand_button.grid_configure(ipadx=10)
+        # Permet d'ouvrir et fermer la frame
+        self.expand_button.bind("<Button-1>", lambda event: self.toggle_height(event))
+        # Associer les fonctions aux événements de survol de la souris
+        self.expand_button.bind("<Enter>", self.onMouseEnter.expand_button)
+        self.expand_button.bind("<Leave>", self.onMouseLeave.expand_button)
+
+        # Ajouter un label pour le texte
+        self.text_label = tk.Label(self.news_plot_frame, text="", fg="#0792ea", bg="#1C1C1C", anchor="center")
+        self.text_label.grid(row=1, column=0, padx=(3, 5), pady=(0, 3), sticky="nsew")
+
         # Créer un widget Text pour afficher les messages
         self.message_text = tk.Text(self.news_plot_frame, background="#1C1C1C", foreground="#ffffff", borderwidth=0, height=3)
-        self.message_text.grid(row=0, column=0, rowspan=3, padx=(5, 5), pady=(5, 5), sticky="nsew")
+        self.message_text.grid(row=0, column=1, padx=(5, 5), pady=(5, 5), sticky="nsew")
 
         # Ajouter une scrollbar verticale
         scrollbar = tk.Scrollbar(self.news_plot_frame, orient="vertical", command=self.message_text.yview)
-        scrollbar.grid(row=0, column=1, rowspan=3, sticky="ns")
+        scrollbar.grid(row=0, column=2, rowspan=2, sticky="ns")
 
         # Configurer le Text pour utiliser la scrollbar
         self.message_text.config(yscrollcommand=scrollbar.set)
 
         # Afficher les messages dans le Text
         self.message_text.insert("1.0", self.FFteam.messages())
+
+        # Variable pour suivre l'état actuel de la hauteur
+        self.expanded = False
+
         # Désactiver l'édition du Text
-        self.message_text.configure(state="disabled")
+        # self.message_text.configure(state="disabled")
 
         # Initialise
         self.message_label = None
 
-        # Ajoutez des poids pour partager la largeur
+        # Redimensionne la frame horizontalement
         log_frame.grid_columnconfigure(0, weight=1)
+        log_frame.grid_columnconfigure(1, weight=0)
 
-        # Ajoutez des poids pour partager la hauteur
+        # Redimensionne la frame verticalement
         log_frame.grid_rowconfigure(0, weight=0)
         log_frame.grid_rowconfigure(1, weight=0)
         log_frame.grid_rowconfigure(2, weight=0)
@@ -929,10 +926,10 @@ class Interface:
         # Attachement de la méthode self.close_window à l'événement de fermeture de la fenêtre
         self.root.protocol("WM_DELETE_WINDOW", self.plotter_gui.stop_or_close)
 
-        # Ajoutez des poids pour partager la largeur
+        # Redimensionne la frame horizontalement
         self.root.grid_columnconfigure(0, weight=1)
 
-        # Ajoutez des poids pour partager la hauteur
+        # Redimensionne la frame verticalement
         self.root.grid_rowconfigure(0, weight=0)
         self.root.grid_rowconfigure(1, weight=1)
 
@@ -950,6 +947,32 @@ class Interface:
 
         # Actualise l'interface
         self.root.update()
+
+    def toggle_height(self, event):
+        print(event)
+        if self.expanded:
+            self.message_text.config(height=3)
+            self.expanded = False
+            directory_path = os.path.dirname(os.path.dirname(__file__))
+            # Chargez l'image et redimensionnez-la
+            close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "open.png"))
+        else:
+            self.message_text.config(height=10)
+            self.expanded = True
+            directory_path = os.path.dirname(os.path.dirname(__file__))
+            # Chargez l'image et redimensionnez-la
+            close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "close.png"))
+
+        # Redimensionnez l'image
+        icon_image = Image.open(close_img_path)
+        icon_image = icon_image.resize((40, 40))
+        self.icon_photo = ImageTk.PhotoImage(icon_image)
+
+        # Mettez à jour l'image du bouton
+        self.expand_button.config(image=self.icon_photo)
+
+        # Définir une largeur fixe pour le widget en ajustant les marges intérieures
+        self.expand_button.grid_configure(ipadx=10)
 
     def gpu_combobox_values(self):
         # Récupérer les GPUs disponibles sur le système
@@ -1320,6 +1343,18 @@ class OnMouseEnter:
             font=("Arial", 12)
         )
 
+    def expand_button(self, event):
+        # Accéder aux informations sur l'événement si nécessaire
+        print(event)
+        # Affiche le message en haut au centre
+        self.plotter_gui.interface.expand_button.config(cursor="hand2")
+
+        # Mettre à jour l'image de l'icône en fonction du statut
+        if not self.plotter_gui.interface.expanded:
+            self.plotter_gui.interface.text_label.config(text=Lang.translate("open"), fg="#00DF03")
+        else:
+            self.plotter_gui.interface.text_label.config(text=Lang.translate("close"), fg="#F10000")
+
     def site_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
@@ -1623,6 +1658,15 @@ class OnMouseLeave:
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.title_label.configure(text=Lang.translate("newVersionAvailable").format(latest_version=self.plotter_gui.interface.latest_version), background="#00B34D", foreground="#000000", highlightthickness=0, cursor="arrow")
+
+    def expand_button(self, event):
+        # Accéder aux informations sur l'événement si nécessaire
+        print(event)
+        # Affiche le message en haut au centre
+        self.plotter_gui.interface.expand_button.config(cursor="arrow")
+
+        # Mettre à jour l'image de l'icône en fonction du statut
+        self.plotter_gui.interface.text_label.config(text="")
 
     def site_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
