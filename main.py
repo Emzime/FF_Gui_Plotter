@@ -25,6 +25,7 @@ from Files.progress_bar import ProgressBar
 from Files.static_method import StaticMethod
 from Files.translation import Lang
 from Files.welcome import Welcome
+from Files.FF_Team_messages import FFteam
 
 
 class FFPlotterGUI:
@@ -49,6 +50,11 @@ class FFPlotterGUI:
         self.progress_bar = ProgressBar(self)
         self.welcome = Welcome(self)
         self.welcome.show_message()
+
+        # Instancier la classe FFteam pour gérer les messages de l'équipe
+        self.team_messages = FFteam(self)
+        # Démarrer la vérification des changements de message
+        self.team_messages.start_checking()
 
         # Chemin du répertoire où est situé le script
         temp_path = os.path.dirname(os.path.abspath(__file__))
@@ -686,6 +692,8 @@ class FFPlotterGUI:
         try:
             # Si le process PID existe
             if self.none_false_variable.plotter_pid:
+                # Arrêtez la vérification des messages de l'équipe
+                self.team_messages.stop_checking()
                 # On termine le processus plotter
                 os.kill(self.none_false_variable.plotter_pid, signal.SIGTERM)
                 # Attendre que le processus plotter se termine proprement
