@@ -118,7 +118,7 @@ class Interface:
 
         # Créez un cadre pour partager la largeur entre logging_label et logging_button
         inner_frame = tk.Frame(logging_frame, bg="#1C1C1C")
-        inner_frame.grid(row=1, column=0, padx=10, pady=0, sticky="nsew")
+        inner_frame.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
 
         # Redimensionne la frame horizontalement
         inner_frame.grid_columnconfigure(0, weight=1)
@@ -300,6 +300,47 @@ class Interface:
 
         # Redimensionne la frame horizontalement
         self.news_plot_frame.grid_columnconfigure(1, weight=1)
+
+        # Chargez l'image et redimensionnez-la
+        self.close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "close.png"))
+        icon_image = Image.open(self.close_img_path)
+        # Redimensionnez l'image
+        icon_image = icon_image.resize((30, 30))
+        self.icon_photo = ImageTk.PhotoImage(icon_image)
+
+        # Ajouter une icône
+        self.expand_button = ttk.Label(self.news_plot_frame, image=self.icon_photo, background="#1C1C1C", anchor="center")
+        self.expand_button.grid(row=0, column=0, padx=(3, 5), pady=(10, 0), sticky="n")
+        # Définir la largeur du widget en ajustant les marges
+        self.expand_button.grid_configure(ipadx=10)
+        # Permet d'ouvrir et fermer la frame
+        self.expand_button.bind("<Button-1>", lambda event: self.toggle_height(event))
+        # Associer les fonctions aux événements de survol de la souris
+        self.expand_button.bind("<Enter>", self.onMouseEnter.expand_button)
+        self.expand_button.bind("<Leave>", self.onMouseLeave.expand_button)
+
+        # Ajouter un label pour le texte
+        self.expand_text_label = tk.Label(self.news_plot_frame, background="#1C1C1C", foreground="#0792ea", anchor="center")
+        self.expand_text_label.configure(text=Lang.translate("open"))
+        self.expand_text_label.grid(row=0, column=0, padx=(3, 5), pady=(45, 0), sticky="n")
+
+        # Créer un widget Text pour afficher les messages
+        self.message_text = tk.Text(self.news_plot_frame, background="#1C1C1C", foreground="#0792ea", borderwidth=0, height=4, font=("Arial", 12))
+        self.message_text.grid(row=0, column=1, padx=(5, 5), pady=(10, 5), sticky="nsew")
+        self.message_text.insert("1.0", self.FFteam.messages())
+
+        # Ajouter une scrollbar verticale
+        scrollbar = tk.Scrollbar(self.news_plot_frame, orient="vertical", command=self.message_text.yview)
+        scrollbar.grid(row=0, column=2, rowspan=2, sticky="ns")
+
+        # Configurer le Text pour utiliser la scrollbar
+        self.message_text.config(yscrollcommand=scrollbar.set)
+
+        # Variable pour suivre l'état actuel de la hauteur
+        self.expanded = False
+
+        # Variable pour suivre l'état actuel de l'icône du message
+        self.message_label = None
 
         # Créer une sous-frame pour le logo FF
         self.input_logo = tk.Frame(top_right_column, bg="#1C1C1C", highlightthickness=1, highlightbackground="#565656")
@@ -784,12 +825,12 @@ class Interface:
 
         # Ligne 9 : Bouton Démarrer
         self.start_button = ttk.Button(button_frame, text=Lang.translate("launchCreation"), command=self.plotter_gui.start_plotting, cursor="hand2")
-        self.start_button.grid(row=0, column=0, pady=15, padx=5, sticky="nsew")
+        self.start_button.grid(row=0, column=0, padx=(5, 5), pady=(15, 15), sticky="nsew")
         self.start_button.configure(style="CustomSend.TButton")
 
         # Ligne 10 : Bouton Arrêter
         self.stop_button = ttk.Button(button_frame, text=Lang.translate("closeWindow"), command=self.plotter_gui.stop_or_close, cursor="hand2")
-        self.stop_button.grid(row=0, column=1, pady=15, padx=5, sticky="nsew")
+        self.stop_button.grid(row=0, column=1, padx=(5, 5), pady=(15, 15), sticky="nsew")
         self.stop_button.configure(style="CustomSend.TButton")
 
         # Créer la deuxième colonne avec 12 lignes et 1 colonne
@@ -806,51 +847,6 @@ class Interface:
         # Créer une Frame pour les journaux
         log_frame = tk.Frame(right_column, bg="#1C1C1C")
         log_frame.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
-
-        # Chargez l'image et redimensionnez-la
-        self.close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "open.png"))
-        icon_image = Image.open(self.close_img_path)
-        # Redimensionnez l'image
-        icon_image = icon_image.resize((40, 40))
-        self.icon_photo = ImageTk.PhotoImage(icon_image)
-
-        # Ajouter une icône
-        self.expand_button = ttk.Label(self.news_plot_frame, image=self.icon_photo, background="#1C1C1C", anchor="center")
-        self.expand_button.grid(row=0, column=0, padx=(3, 5), pady=(3, 0), sticky="nw")
-        # Définir la largeur du widget en ajustant les marges
-        self.expand_button.grid_configure(ipadx=10)
-        # Permet d'ouvrir et fermer la frame
-        self.expand_button.bind("<Button-1>", lambda event: self.toggle_height(event))
-        # Associer les fonctions aux événements de survol de la souris
-        self.expand_button.bind("<Enter>", self.onMouseEnter.expand_button)
-        self.expand_button.bind("<Leave>", self.onMouseLeave.expand_button)
-
-        # Ajouter un label pour le texte
-        self.text_label = tk.Label(self.news_plot_frame, text="", fg="#0792ea", bg="#1C1C1C", anchor="center")
-        self.text_label.grid(row=1, column=0, padx=(3, 5), pady=(0, 3), sticky="nsew")
-
-        # Créer un widget Text pour afficher les messages
-        self.message_text = tk.Text(self.news_plot_frame, background="#1C1C1C", foreground="#ffffff", borderwidth=0, height=3)
-        self.message_text.grid(row=0, column=1, padx=(5, 5), pady=(5, 5), sticky="nsew")
-
-        # Ajouter une scrollbar verticale
-        scrollbar = tk.Scrollbar(self.news_plot_frame, orient="vertical", command=self.message_text.yview)
-        scrollbar.grid(row=0, column=2, rowspan=2, sticky="ns")
-
-        # Configurer le Text pour utiliser la scrollbar
-        self.message_text.config(yscrollcommand=scrollbar.set)
-
-        # Afficher les messages dans le Text
-        self.message_text.insert("1.0", self.FFteam.messages())
-
-        # Variable pour suivre l'état actuel de la hauteur
-        self.expanded = False
-
-        # Désactiver l'édition du Text
-        # self.message_text.configure(state="disabled")
-
-        # Initialise
-        self.message_label = None
 
         # Redimensionne la frame horizontalement
         log_frame.grid_columnconfigure(0, weight=1)
@@ -870,8 +866,8 @@ class Interface:
         error_label.grid(row=1, column=0, pady=(10, 1), padx=15, sticky="nw")
         error_label.configure(background="#1C1C1C", foreground="#F10000")
 
-        self.errors_text = tk.Text(log_frame, wrap=tk.WORD, height=2, highlightthickness=1, highlightbackground="#565656")
-        self.errors_text.grid(row=2, column=0, pady=(0, 5), padx=(15, 0), sticky="nsew")
+        self.errors_text = tk.Text(log_frame, wrap=tk.WORD, height=4, highlightthickness=1, highlightbackground="#565656")
+        self.errors_text.grid(row=2, column=0, padx=(15, 0), pady=(0, 5), sticky="nsew")
         self.errors_text.configure(bg="#2C2C2C", fg="#F10000")
 
         errors_scrollbar = ttk.Scrollbar(log_frame, orient=tk.VERTICAL, command=self.errors_text.yview)
@@ -951,21 +947,23 @@ class Interface:
     def toggle_height(self, event):
         print(event)
         if self.expanded:
-            self.message_text.config(height=3)
+            self.message_text.config(height=4)
             self.expanded = False
             directory_path = os.path.dirname(os.path.dirname(__file__))
             # Chargez l'image et redimensionnez-la
-            close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "open.png"))
+            close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "close.png"))
+            self.plotter_gui.interface.expand_text_label.config(text=Lang.translate("open"), foreground="#0792ea")
         else:
             self.message_text.config(height=10)
             self.expanded = True
             directory_path = os.path.dirname(os.path.dirname(__file__))
             # Chargez l'image et redimensionnez-la
-            close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "close.png"))
+            close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "open.png"))
+            self.plotter_gui.interface.expand_text_label.config(text=Lang.translate("close"), foreground="#0792ea")
 
         # Redimensionnez l'image
         icon_image = Image.open(close_img_path)
-        icon_image = icon_image.resize((40, 40))
+        icon_image = icon_image.resize((30, 30))
         self.icon_photo = ImageTk.PhotoImage(icon_image)
 
         # Mettez à jour l'image du bouton
@@ -1351,9 +1349,9 @@ class OnMouseEnter:
 
         # Mettre à jour l'image de l'icône en fonction du statut
         if not self.plotter_gui.interface.expanded:
-            self.plotter_gui.interface.text_label.config(text=Lang.translate("open"), fg="#00DF03")
+            self.plotter_gui.interface.expand_text_label.config(text=Lang.translate("open"), foreground="#00DF03")
         else:
-            self.plotter_gui.interface.text_label.config(text=Lang.translate("close"), fg="#F10000")
+            self.plotter_gui.interface.expand_text_label.config(text=Lang.translate("close"), foreground="#F10000")
 
     def site_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
@@ -1666,7 +1664,10 @@ class OnMouseLeave:
         self.plotter_gui.interface.expand_button.config(cursor="arrow")
 
         # Mettre à jour l'image de l'icône en fonction du statut
-        self.plotter_gui.interface.text_label.config(text="")
+        if not self.plotter_gui.interface.expanded:
+            self.plotter_gui.interface.expand_text_label.config(text=Lang.translate("open"), foreground="#0792ea")
+        else:
+            self.plotter_gui.interface.expand_text_label.config(text=Lang.translate("close"), foreground="#0792ea")
 
     def site_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
