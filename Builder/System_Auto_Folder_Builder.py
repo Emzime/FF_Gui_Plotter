@@ -102,6 +102,8 @@ def build_executable():
     elif os.name == "posix":  # Linux
         files_to_add = files_to_add_linux
         separator = ":"
+        # Ajouter l'option --hidden-import='PIL._tkinter_finder' pour Linux
+        pyinstaller_cmd += "--hidden-import='PIL._tkinter_finder' "
 
     for file_path, dest_dir in files_to_add:
         full_path = os.path.join(directory_path, file_path)

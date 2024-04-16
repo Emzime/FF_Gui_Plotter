@@ -639,6 +639,9 @@ class FFPlotterGUI:
                 self.queue_logs.log_queue_messages.put((Lang.translate("launchWithPID").format(plotter_executable=plotter_executable, plotter_pid=self.none_false_variable.plotter_pid), None))
                 time.sleep(0.8)
 
+                # debug
+                print(f"PID: {self.none_false_variable.plotter_pid}")
+
                 # Message dans la file d'attente
                 self.queue_logs.log_queue_messages.put((f"{' '.join(setCommand)}", None))
                 time.sleep(0.8)
@@ -691,12 +694,18 @@ class FFPlotterGUI:
         try:
             # Si le process PID existe
             if self.none_false_variable.plotter_pid:
-                # Arrêtez la vérification des messages de l'équipe
-                self.team_messages.stop_checking()
+                # debug
+                print(f"PID: {self.none_false_variable.plotter_pid}")
+
                 # On termine le processus plotter
                 os.kill(self.none_false_variable.plotter_pid, signal.SIGTERM)
+
                 # Attendre que le processus plotter se termine proprement
                 self.none_false_variable.plotter_process.wait()
+
+                # Arrêtez la vérification des messages de l'équipe
+                self.team_messages.stop_checking()
+
                 # Réinitialise la variable
                 self.none_false_variable.plot_creation_in_progress = False
                 # Initialise la variable pour change les boutons au moment où l'on stoppe la création

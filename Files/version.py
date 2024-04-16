@@ -49,6 +49,8 @@ class CheckVersion:
         # Obtenir la version actuelle
         with open(version_file_path, 'r') as file:
             current_id = file.read().strip()
+            # debug
+            print(Lang.translate("currentVersion").format(current_version=current_id))
 
         # Mettre à jour la date de la dernière vérification
         self.update_last_check_date()
