@@ -275,8 +275,8 @@ class FFPlotterGUI:
             return hdd_dirs_with_space[0]
         else:
             # Redirection vers log_queue_messages
-            self.queue_logs.log_queue_messages.put((Lang.translate("spaceIsFull"), "warning"))
-            time.sleep(0.8)
+            if self.config_manager.read_config("delCompressedPlot_status") == Lang.translate("on"):
+                self.queue_logs.log_queue_messages.put((Lang.translate("spaceIsFull"), "warning"))
 
         # Si aucun disque n'a suffisamment d'espace, chercher un disque avec des anciens plots et supprimer un par un
         for hdd in hdd_dirs:
@@ -299,7 +299,6 @@ class FFPlotterGUI:
                         time.sleep(0.8)
 
                         # Supprimer le plot
-                        # os.remove(plot_path)
                         os.unlink(plot_path)
 
                         # Redirection vers log_queue_messages
@@ -310,7 +309,7 @@ class FFPlotterGUI:
                         current_deleted_plot_number = self.config_manager.read_config(self.config_manager.config_stats).get("deleted_plot_number")
                         # Incrémente la variable de plots supprimés
                         new_deleted_plot_number = int(current_deleted_plot_number)
-                        new_deleted_plot_number = new_deleted_plot_number + 1
+                        new_deleted_plot_number += 1
                         # Mise à jour de l'interface graphique
                         self.interface.deleted_plot_number_label.config(text=f"{new_deleted_plot_number}")
                         # Mise à jour du fichier de configuration
@@ -319,6 +318,9 @@ class FFPlotterGUI:
                         # Mettre à jour la liste des disques avec de l'espace
                         return self.find_hdd_with_space(hdd_dirs, compression)
 
+                    except FileNotFoundError:
+                        # Le fichier n'existe pas
+                        self.queue_logs.log_queue_errors.put(Lang.translate("fileNotFoundError").format(plot_path=plot_path))
                     except Exception as e:
                         # Redirection vers log_queue_messages en cas d'erreur
                         self.queue_logs.log_queue_errors.put(Lang.translate("errorDeletingPlot").format(plot_path=plot_path, e=str(e)))
@@ -378,7 +380,7 @@ class FFPlotterGUI:
 
             # Vérifie si le disque de destination est toujours disponible
             if not self.static_method.is_hdd_dir_valid(selected_hdd):
-                self.queue_logs.log_queue_errors.put(Lang.translate("destinationDiskNotAvailable").format(selected_hdd=selected_hdd))
+                self.queue_logs.log_queue_errors.put(Lang.translate("destinationDiskNotAvailable"))
                 return
 
             # Créez et démarrez le thread de surveillance
@@ -407,7 +409,7 @@ class FFPlotterGUI:
         plotter_path_join = os.path.join(plotter_path, plotter_executable)
         ssd_temp = os.path.join(self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp"), "")
         # Calculez le nombre de cœurs à utiliser pour atteindre environ 80% d'utilisation
-        cores_to_use = psutil.cpu_count(logical=False) - 1  # Utilisez tous les cœurs sauf le dernier
+        cores_to_use = psutil.cpu_count(logical=False) - 1  # Utilisez tous les cœurs sauf le dernier pour éviter que le plotter se fige
 
         # Construire la commande de création de plot pour bladebit cuda
         command = [
@@ -819,6 +821,11 @@ class FFPlotterGUI:
             self.log_manager.log_plotter_message(Lang.translate("searchForAvailableSpace").format(seconds_left=seconds_left))
             # Attendre une seconde entre chaque itération pour obtenir un compte à rebours en temps réel
             time.sleep(1)
+
+            # Si le décompte atteint zéro, sortir de la boucle
+            if seconds_left == 1:
+                self.log_manager.log_plotter_message(Lang.translate("noDiskAvailable").format(seconds_left=seconds_left))
+                break
 
     def run(self):
         # Lance l'application

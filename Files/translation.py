@@ -5,8 +5,13 @@ import locale
 # Répertoire des fichiers de traduction
 translation_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Languages")
 
-# Obtenez la langue par défaut du système
-lang, _ = locale.getdefaultlocale()
+# Obtenez les deux premières lettres de la langue par défaut du système
+lang, _ = locale.getlocale()
+if lang:
+    lang = lang[:2].lower()
+else:
+    # Utilisation d'une langue par défaut fixe en cas de détection de la langue échouée
+    lang = "en"
 
 # Construisez dynamiquement le chemin du fichier de traduction en fonction de la langue
 translation_file = os.path.join(translation_dir, f"translations_{lang}.py")
@@ -16,7 +21,7 @@ try:
     translations_module = __import__(f"Languages.translations_{lang}", fromlist=['translations'])
 except ImportError:
     # Si le fichier de traduction pour la langue spécifiée n'existe pas, utilisez le fichier par défaut (en anglais par exemple)
-    translations_module = __import__("Languages.translations_en_US", fromlist=['translations'])
+    translations_module = __import__("Languages.translations_en", fromlist=['translations'])
 
 # Accédez au dictionnaire de traductions
 translations = translations_module.translations

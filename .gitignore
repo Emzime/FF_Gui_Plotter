@@ -5,8 +5,9 @@ CreateExe.txt
 venv/
 /.venv/
 /.idea
-/Files/__pycache__
-/Builder/build/
-/Builder/dist
+Files/__pycache__
+Languages/__pycache__
+Builder/build/
+Builder/dist
+Builder/build.yaml
 Builder/French Farmer Gui.spec
-/Languages/__pycache__

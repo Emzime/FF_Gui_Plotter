@@ -1,3 +1,5 @@
+# translations_fr.py
+
 translations = {
     "open": "Ouvrir",
     "close": "Fermer",
@@ -15,10 +17,11 @@ translations = {
     "browse_select_t2": "Sélectionnez le disque temporaire 2 -t2 (NVME/SSD)",
     "browse_select_d": "Sélectionnez un dossier de destination -d",
     "errorRetrievingDiskSize": "Erreur lors de la récupération de la taille du disque: {e}",
-    "spaceIsFull": "Space is full, looking for an old stud to remove...",
+    "spaceIsFull": "L'espace est plein, recherche d'un ancien plot à supprimer...",
     "oldPlotFound": "Ancienne parcelle trouvé: {plot_path}",
     "deletionInProgress": "Suppression en cours...",
     "oldPlotSuccessfullyRemoved": "Ancienne parcelle supprimée avec succès",
+    "fileNotFoundError": "Erreur, le fichier {plot_path} n'existe pas où à déjà été supprimé",
     "errorDeletingPlot": "Erreur lors de la suppression de la parcelle {plot_path}: {e}",
     "title_launchPlotCreation": "Lancement",
     "launchPlotCreation": "Voulez-vous lancer la création de parcelle ?",
@@ -28,7 +31,7 @@ translations = {
     "locationT1Invalid": "L'emplacement du disque temporaire -t1 n'est pas valide: {ssd_temp}",
     "locationT2Invalid": "L'emplacement du disque temporaire 2 -t2 n'est pas valide: {ssd_temp2move}",
     "initialisation": "Initialisation...",
-    "destinationDiskNotAvailable": "Le disque de destination n'est plus disponible: {selected_hdd}",
+    "destinationDiskNotAvailable": "Le disque de destination n'est plus disponible ou est plein",
     "noDestinationDisksHaveEnoughSpace": "Aucun disques de destinations n'a suffisamment d'espace pour créer une parcelle",
     "availableSpace": "Espace disponible: {available_space_mb:.2f} Mo | {available_space_gb:.2f} Go | {available_space_tb:.2f} To",
     "plotsToBeCreatedIn": "{on_selected_hdd} parcelles à créer dans {selected_hdd}",
@@ -47,6 +50,7 @@ translations = {
     "stopCreation": "Stopper la création",
     "closeWindow": "Fermer la fenêtre",
     "searchForAvailableSpace": "Recherche d'espace disponible dans {seconds_left} secondes\n",
+    "noDiskAvailable": "Aucun disques de destinations n'a suffisamment d'espace pour créer un plot.\nArrêt de ma création.",
     "processIdentifierRetrieval": "Récupération de l'identifiant du processus {process_name}: {str(e)}",
     "totalPlotsCreated": "Total de plots créés : ",
     "totalOldPlotsDeleted": "Total d'anciens plots supprimés :",
@@ -97,7 +101,7 @@ translations = {
         "\n\n"
         "Pour lancer la création de parcelles, tu dois configurer les champs sur la gauche:"
         "\n"
-        "  - Sélectionne l'exécutable'."
+        "  - Sélectionne l'exécutable."
         "\n"
         "  - Sélectionne la compression que tu veux utiliser."
         "\n"
@@ -111,7 +115,7 @@ translations = {
         "\n"
         "  - Ajoute le chemin vers le disque temporaire 2 si tu utilises moins de 256 Go de mémoire."
         "\n"
-        "  - Enfin, il ne te reste plus qu'à cliquer sur 'Lancer la création'."
+        "  - Enfin, il ne te reste plus qu'à cliquer sur \"Lancer la création\"."
         "\n\n"
         "Informations :"
         "\n"
@@ -139,7 +143,7 @@ translations = {
         "\n"
         "       - 80 à 90 % en taux de preuve."
         "\n\n"
-        "Un fichier de configuration portant le nom de '{config_file}' sera enregistré dans le même répertoire que ce script "
+        "Un fichier de configuration portant le nom de \"{config_file}\"sera enregistré dans le même répertoire que ce script "
         "et sera sauvegardé à chaque modification que tu effectueras."
         "\n\n"
         "Nous espérons que le GUI te permettra de créer tes parcelles compressés de façon simple et efficace."
