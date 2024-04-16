@@ -77,15 +77,16 @@ class Interface:
             old_message = Lang.translate("currentVersion").format(current_version=self.current_version)
 
             if self.latest_version is not None and self.current_version < self.latest_version:
-                self.root.title(Lang.translate("guiName") + new_message)
+                self.root.title(Lang.translate("guiName") + old_message + new_message)
                 # Ajouter un label dans la barre de titre pour simuler un lien
-                self.title_label = Label(self.root, text=new_message)
-                self.title_label.configure(background="#0792ea", foreground="#FFFF00")
-                self.title_label.bind("<Button-1>", lambda event: self.static_method.open_new_version_link(event))
+                self.title_Version_label = Label(self.root, text=new_message)
+                self.title_Version_label.configure(background="#0792ea", foreground="#000000", font=("Arial", 14))
+                # Permet d'ouvrir le site de mise à jour
+                self.title_Version_label.bind("<Button-1>", lambda event: self.static_method.open_new_version_link(event))
                 # Associer les fonctions aux événements de survol de la souris
-                self.title_label.bind("<Enter>", self.onMouseEnter.new_version_link)
-                self.title_label.bind("<Leave>", self.onMouseLeave.new_version_link)
-                self.title_label.grid(row=0, column=0, padx=0, pady=0)
+                self.title_Version_label.bind("<Enter>", self.onMouseEnter.new_version_link)
+                self.title_Version_label.bind("<Leave>", self.onMouseLeave.new_version_link)
+                self.title_Version_label.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
             else:
                 self.root.title(Lang.translate("guiName") + old_message)
 
@@ -1331,6 +1332,14 @@ class OnMouseEnter:
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         # Affiche le message en haut au centre
+        self.plotter_gui.interface.title_Version_label.configure(
+            text=Lang.translate("newVersionAvailable").format(latest_version=self.plotter_gui.interface.latest_version),
+            background="#00DF03",
+            foreground="#000000",
+            highlightthickness=0,
+            cursor="hand2"
+        )
+        # Affiche le message en haut au centre
         self.plotter_gui.interface.message_label = tk.Label(self.plotter_gui.interface.news_plot_frame, background="#1C1C1C", foreground="#ffffff")
         self.plotter_gui.interface.message_label.grid(row=0, column=0, rowspan=3, columnspan=2, padx=(0, 0), pady=(0, 0), sticky="nsew")
         self.plotter_gui.interface.message_label.configure(
@@ -1655,7 +1664,11 @@ class OnMouseLeave:
     def new_version_link(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
-        self.plotter_gui.interface.title_label.configure(text=Lang.translate("newVersionAvailable").format(latest_version=self.plotter_gui.interface.latest_version), background="#00B34D", foreground="#000000", highlightthickness=0, cursor="arrow")
+        # Affiche le message en haut au centre
+        self.plotter_gui.interface.title_Version_label.config(cursor="arrow")
+        self.plotter_gui.interface.title_Version_label.configure(text=Lang.translate("newVersionAvailable").format(latest_version=self.plotter_gui.interface.latest_version), background="#0792ea", foreground="#000000", highlightthickness=0, cursor="arrow")
+        # Réinitialisation de la frame des messages
+        self.update_message_text()
 
     def expand_button(self, event):
         # Accéder aux informations sur l'événement si nécessaire
