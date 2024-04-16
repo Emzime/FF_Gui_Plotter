@@ -496,7 +496,7 @@ class Interface:
             # Si le plotter est cuda_plot_k32, n'afficher que les compressions de 29 à 33
             compression_values = [str(compression) for compression in range(29, 34)]
             compression = int(current_compression)
-            ram_qty_values = ["16", "32", "64", "128", "256", "512"]
+            ram_qty_values = ["16", "32", "64", "128", "192", "256", "384", "512", "768"]
         else:
             # Si le plotter est un autre, n'afficher que les compressions de 1 à 9 et de 11 à 20
             compression_values = [str(compression) for compression in range(1, 21)]
@@ -504,7 +504,7 @@ class Interface:
             if '10' in compression_values:
                 compression_values.remove('10')
             compression = int(current_compression)
-            ram_qty_values = ["16", "32", "64", "128", "256", "512"]
+            ram_qty_values = ["16", "32", "64", "128", "192", "256", "384", "512", "768"]
 
         # Créer une variable pour la valeur de compression
         self.compression_var = tk.StringVar(value=str(compression))
@@ -601,7 +601,7 @@ class Interface:
         # Ligne 7 : Disque temporaire 2
         temp2move_text = ""
         if current_plotter_name.startswith("cuda_plot"):
-            if int(current_ram_qty) == 128:
+            if int(current_ram_qty) == 128 or int(current_ram_qty) == 192:
                 temp2move_text = Lang.translate("temporaryDisk_2")
             elif int(current_ram_qty) < 128:
                 temp2move_text = Lang.translate("temporaryDisk_3")
@@ -1073,7 +1073,7 @@ class UpdateValues:
 
         # Modifier le texte du label selon la quantité de RAM sélectionnée
         if plotter_name.startswith("cuda_plot"):
-            if int(selected_ram_qty) == 128:
+            if int(selected_ram_qty) == 128 or int(selected_ram_qty) == 192:
                 label_text = Lang.translate("temporaryDisk_2")
             elif int(selected_ram_qty) < 128:
                 label_text = Lang.translate("temporaryDisk_3")

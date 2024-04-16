@@ -102,7 +102,7 @@ class FFPlotterGUI:
                     compression_values = [str(compression) for compression in range(1, 21) if compression != 10]
                 else:
                     compression_values = [str(compression) for compression in range(29, 34)]
-                ram_qty_values = ["16", "32", "64", "128", "256", "512"]
+                ram_qty_values = ["16", "32", "64", "128", "192", "256", "384", "512", "768"]
 
             # Mise à jour du bouton check plot
             self.interface.buttonSwitch.check()
@@ -536,7 +536,6 @@ class FFPlotterGUI:
             # Défini la variable pour la ram
             ramQty = ram_qty_gib_divided
             # Ajoute les arguments liés à la ram pour windows
-            # if ram_qty_gb == 128:
             command.extend([
                 "-M", str(int(ramQty)),
             ])
@@ -545,7 +544,7 @@ class FFPlotterGUI:
         if ssd_temp2 != "":
             # Modifier le disque temporaire utilisé selon la quantité de RAM sélectionnée
             if plotter_name.startswith("cuda_plot"):
-                if ram_qty_gb == 128:
+                if ram_qty_gb == 128 or ram_qty_gb == 192:
                     # ajoute le champ à la commande
                     command.extend([
                         "-2", ssd_temp2,
