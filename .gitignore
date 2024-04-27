@@ -9,5 +9,5 @@ Files/__pycache__
 Languages/__pycache__
 Builder/build/
 Builder/dist
-Builder/build.yaml
 Builder/French Farmer Gui.spec
+/.github/workflows/release_publish-with.exe.yml

@@ -1,0 +1,339 @@
+name: Build and Release Application
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get Latest Release ID
+        id: get_latest_release_ID
+        run: |
+          LATEST_VERSION=$(curl -s -H 'Authorization: token ${{ secrets.TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name')
+          echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+
+      # Récupération de la version à partir de version.txt
+      - name: Get Version from version.txt
+        id: get_version
+        run: |
+          VERSION=$(curl -s https://raw.githubusercontent.com/${{ github.repository }}/main/Files/version.txt)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Check if Version is Greater
+        id: compare_versions
+        run: |
+          if dpkg --compare-versions "${{ env.VERSION }}" "gt" "${{ env.LATEST_VERSION }}"; then
+            echo "GREATER=true" >> $GITHUB_ENV
+          else
+            echo "GREATER=false" >> $GITHUB_ENV
+          fi
+
+      - name: Checkout Repository
+        if: ${{ env.GREATER != 'false' }}
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        if: ${{ env.GREATER != 'false' }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.0'
+
+      - name: Set up Python
+        if: ${{ env.GREATER != 'false' }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      # Créer une release
+      - name: Create Release
+        if: ${{ env.GREATER != 'false' }}
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: "${{ env.VERSION }}"
+          release_name: "FF_Gui v${{ env.VERSION }}"
+          body: "Update release_publish.yml"
+          draft: false
+          prerelease: false
+          exclude: .github/** Builder/** .gitignore
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
+
+  Linux_Standalone_Build:
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - name: Get Latest Release ID
+        id: get_latest_release_ID
+        run: |
+          LATEST_ID=$(curl -s -H 'Authorization: token ${{ secrets.TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.id')
+          echo "LATEST_ID=$LATEST_ID" >> $GITHUB_ENV
+
+      - name: Set Linux Executable Name
+        run: echo "LINUX_EXECUTABLE_NAME=FF_Gui_Linux_Standalone" >> $GITHUB_ENV
+
+      # Vérification si le nom de l'exécutable est déjà présent dans la release
+      - name: Check if Linux Executable Name Exists
+        id: check_executable_name
+        run: |
+          # Construire l'URL pour obtenir les détails de cette release
+          release_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/${LATEST_ID}"
+          # Obtenir les détails de la release
+          release_details=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" "$release_url")
+  
+          # Vérifier si la récupération des détails de la release a réussi
+          if [ -n "$release_details" ]; then
+              # Récupérer l'URL pour obtenir les actifs de cette release
+              assets_url=$(echo "$release_details" | jq -r '.assets_url')
+              # Obtenir les actifs de la release
+              assets=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" "$assets_url")
+  
+              # Nom de l'actif recherché
+              target_asset_name="${LINUX_EXECUTABLE_NAME}"
+  
+              # Vérifier si l'actif recherché est présent parmi les actifs de la release
+              linux_executable_exists=$(echo "$assets" | jq -r --arg target_asset_name "$target_asset_name" '.[] | select(.name == $target_asset_name)')
+  
+              # Écrire le résultat dans l'environnement GitHub
+              if [ -n "$linux_executable_exists" ]; then
+                  echo "LINUX_EXECUTABLE_EXISTS=true" >> $GITHUB_ENV
+              else
+                  echo "LINUX_EXECUTABLE_EXISTS=false" >> $GITHUB_ENV
+              fi
+          else
+              echo "Failed to retrieve release details"
+          fi
+
+      - name: Checkout Repository
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.0'
+
+      # Définition de la version Python
+      - name: Set up Python
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      # Installation de PyInstaller
+      - name: Install PyInstaller and Dependencies
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          python -m pip install -r requirements.txt
+
+      # Construction de l'exécutable Linux
+      - name: Build Linux Executable
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        run: |
+          python Builder/workflow_Builder_Linux_Standalone.py
+
+      - name: Update Linux Release
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.LATEST_ID }}/assets?name=${{ env.LINUX_EXECUTABLE_NAME }}"
+          asset_path: "${{ github.workspace }}/dist/${{ env.LINUX_EXECUTABLE_NAME }}"
+          asset_name: "${{ env.LINUX_EXECUTABLE_NAME }}"
+          asset_content_type: application/octet-stream
+
+
+  Linux_Folder_Build:
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - name: Get Latest Release ID
+        id: get_latest_release_ID
+        run: |
+          LATEST_ID=$(curl -s -H 'Authorization: token ${{ secrets.TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.id')
+          echo "LATEST_ID=$LATEST_ID" >> $GITHUB_ENV
+
+      - name: Set Linux Executable Name
+        run: echo "LINUX_EXECUTABLE_NAME=FF_Gui_Linux_Folder.tar.gz" >> $GITHUB_ENV
+
+      # Vérification si le nom de l'exécutable est déjà présent dans la release
+      - name: Check if Linux Executable Name Exists
+        id: check_executable_name
+        run: |
+          # Construire l'URL pour obtenir les détails de cette release
+          release_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/${LATEST_ID}"
+          # Obtenir les détails de la release
+          release_details=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" "$release_url")
+  
+          # Vérifier si la récupération des détails de la release a réussi
+          if [ -n "$release_details" ]; then
+              # Récupérer l'URL pour obtenir les actifs de cette release
+              assets_url=$(echo "$release_details" | jq -r '.assets_url')
+              # Obtenir les actifs de la release
+              assets=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" "$assets_url")
+  
+              # Nom de l'actif recherché
+              target_asset_name="${LINUX_EXECUTABLE_NAME}"
+  
+              # Vérifier si l'actif recherché est présent parmi les actifs de la release
+              linux_executable_exists=$(echo "$assets" | jq -r --arg target_asset_name "$target_asset_name" '.[] | select(.name == $target_asset_name)')
+  
+              # Écrire le résultat dans l'environnement GitHub
+              if [ -n "$linux_executable_exists" ]; then
+                  echo "LINUX_EXECUTABLE_EXISTS=true" >> $GITHUB_ENV
+              else
+                  echo "LINUX_EXECUTABLE_EXISTS=false" >> $GITHUB_ENV
+              fi
+          else
+              echo "Failed to retrieve release details"
+          fi
+
+      - name: Checkout Repository
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.0'
+
+      # Définition de la version Python
+      - name: Set up Python
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      # Installation de PyInstaller
+      - name: Install PyInstaller and Dependencies
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          python -m pip install -r requirements.txt
+
+      # Construction de l'exécutable Linux
+      - name: Build Linux Executable
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        run: |
+          python Builder/workflow_Builder_Linux_Folder.py
+
+      - name: Update Linux Release
+        if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.LATEST_ID }}/assets?name=${{ env.LINUX_EXECUTABLE_NAME }}"
+          asset_path: "${{ github.workspace }}/dist/${{ env.LINUX_EXECUTABLE_NAME }}"
+          asset_name: "${{ env.LINUX_EXECUTABLE_NAME }}"
+          asset_content_type: application/octet-stream
+
+
+  Windows_Folder_Build:
+    needs: [build]
+    runs-on: windows-latest
+
+    steps:
+      - name: Get Latest Release ID
+        id: get_latest_release_ID
+        run: |
+          # Get Latest Release ID
+          $LATEST_ID = (Invoke-RestMethod -Uri "https://api.github.com/repos/${env:GITHUB_REPOSITORY}/releases/latest" -Headers @{"Authorization" = "token ${{ secrets.TOKEN }}"} | Select-Object -ExpandProperty id)
+          Add-Content -Path $env:GITHUB_ENV -Value "LATEST_ID=$LATEST_ID"
+          echo "LATEST_ID=$LATEST_ID" >> $env:GITHUB_ENV
+
+      - name: Set Windows Executable Name
+        run: echo "WINDOWS_EXECUTABLE_NAME=FF_Gui_Windows_Folder.zip" >> $env:GITHUB_ENV
+
+      # Vérification si le nom de l'exécutable est déjà présent dans la release
+      - name: Check if Windows Executable Name Exists
+        id: check_executable_name
+        run: |
+          # Construire l'URL pour obtenir les détails de cette release
+          $release_url = "https://api.github.com/repos/${env:GITHUB_REPOSITORY}/releases/${{ env.LATEST_ID }}"
+          # Obtenir les détails de la release
+          $release_details = Invoke-RestMethod -Uri $release_url -Headers @{"Authorization" = "token ${{ secrets.TOKEN }}"}
+
+          # Vérifier si la récupération des détails de la release a réussi
+          if ($release_details) {
+              # Récupérer l'URL pour obtenir les actifs de cette release
+              $assets_url = $release_details.assets_url
+              # Obtenir les actifs de la release
+              $assets = Invoke-RestMethod -Uri $assets_url -Headers @{"Authorization" = "token ${{ secrets.TOKEN }}"}
+
+              # Nom de l'actif recherché
+              $target_asset_name = "${{ env.WINDOWS_EXECUTABLE_NAME }}"
+
+              # Vérifier si l'actif recherché est présent parmi les actifs de la release
+              $windows_executable_exists = $assets | Where-Object { $_.name -eq $target_asset_name }
+
+              # Écrire le résultat dans l'environnement GitHub
+              if ($windows_executable_exists) {
+                  # Add-Content -Path $env:GITHUB_ENV -Value "WINDOWS_EXECUTABLE_EXISTS=true"
+                  echo "WINDOWS_EXECUTABLE_EXISTS=true" >> $env:GITHUB_ENV
+              } else {
+                  # Add-Content -Path $env:GITHUB_ENV -Value "WINDOWS_EXECUTABLE_EXISTS=false"
+                  echo "WINDOWS_EXECUTABLE_EXISTS=false" >> $env:GITHUB_ENV
+              }
+          } else {
+              Write-Host "Failed to retrieve release details"
+          }
+
+      - name: Checkout Repository
+        if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.0'
+
+      # Définition de la version Python
+      - name: Set up Python
+        if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      # Installation de PyInstaller
+      - name: Install PyInstaller and Dependencies
+        if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          python -m pip install -r requirements.txt
+
+      # Construction de l'exécutable Windows
+      - name: Build Windows Executable
+        if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
+        run: |
+          python Builder/workflow_Builder_Windows_Folder.py
+
+      # Mise à jour de la release sur GitHub
+      - name: Update Windows Release
+        if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.LATEST_ID }}/assets?name=${{ env.WINDOWS_EXECUTABLE_NAME }}"
+          asset_path: "${{ github.workspace }}/dist/${{ env.WINDOWS_EXECUTABLE_NAME }}"
+          asset_name: "${{ env.WINDOWS_EXECUTABLE_NAME }}"
+          asset_content_type: application/octet-stream
