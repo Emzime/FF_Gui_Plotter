@@ -7,7 +7,7 @@ translations = {
     "versionNotFound": "Datei {version} nicht gefunden",
     "guiName": "French Farmer Gui",
     "currentVersion": " - Aktuelle Version: {current_version}",
-    "newVersionAvailable": " | Neue Version verfügbar: {latest_version}",
+    "newVersionAvailable": "Neue Version verfügbar: {latest_version}",
     "downloadNewVersion": "Klicken Sie hier, um die neue Version herunterzuladen",
     "badProofPercent": "Das Plot wurde gelöscht, da es nur {requested_proof}% hatte",
     "goodProofPercent": "Beweisprozentsatz des zuletzt erstellten Plots: {self.initialize_variables.percent_proof}%",
