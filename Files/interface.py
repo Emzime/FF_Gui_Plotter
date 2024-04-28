@@ -77,7 +77,7 @@ class Interface:
             old_message = Lang.translate("currentVersion").format(current_version=self.current_version)
 
             if self.latest_version is not None and self.current_version < self.latest_version:
-                self.root.title(Lang.translate("guiName") + old_message + new_message)
+                self.root.title(Lang.translate("guiName") + old_message + " | " + new_message)
                 # Ajouter un label dans la barre de titre pour simuler un lien
                 self.title_Version_label = Label(self.root, text=new_message)
                 self.title_Version_label.configure(background="#0792ea", foreground="#000000", font=("Arial", 14))

@@ -7,7 +7,7 @@ translations = {
     "versionNotFound": "Le fichier {version} n'existe pas",
     "guiName": "French Farmer Gui",
     "currentVersion": " - Version actuelle: {current_version}",
-    "newVersionAvailable": " | Nouvelle version disponible: {latest_version}",
+    "newVersionAvailable": "Nouvelle version disponible: {latest_version}",
     "downloadNewVersion": "Cliquez pour télécharger la nouvelle version",
     "badProofPercent": "La parcelle vient d'être supprimé car elle n'avait que {requested_proof}%",
     "goodProofPercent": "Pourcentage de preuves de la dernière parcelle créé: {self.initialize_variables.percent_proof}%",
@@ -146,7 +146,7 @@ translations = {
         "Un fichier de configuration portant le nom de \"{config_file}\"sera enregistré dans le même répertoire que ce script "
         "et sera sauvegardé à chaque modification que tu effectueras."
         "\n\n"
-        "Nous espérons que le GUI te permettra de créer tes parcelles compressés de façon simple et efficace."
+        "Nous espérons que le GUI te permettra de créer tes parcelles compressées de façon simple et efficace."
         "\n"
         "Si tu as une question à poser, n'oublie pas que nous sommes disponibles sur Discord."
         "\n\n"
