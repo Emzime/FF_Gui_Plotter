@@ -14,7 +14,7 @@ pip install psutil ttkthemes GPUtil requests logging datetime Pillow
 python main.py
 ```
 
-Build on Linux:
+Build on Windows:
 ```
 . ./venv/bin/activate
 cd Builder
