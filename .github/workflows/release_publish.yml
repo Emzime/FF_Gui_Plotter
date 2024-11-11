@@ -60,11 +60,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
-      - name: Create the release archive using rsync
+      - name: Copy files to temporary directory for archiving
         run: |
-          rsync -av --exclude='.github' --exclude='Builder' --exclude='.gitignore' ./ temp/
+          mkdir temp
+          rsync -av --exclude='.github' --exclude='Builder' --exclude='.git' --exclude='.gitignore' ./ temp/
+
+      - name: Create the release archive
+        run: |
           tar -czf release_asset.tar.gz -C temp .
-          rm -rf temp  # Nettoyer le répertoire temporaire
+
+      - name: Clean up temporary directory
+        run: |
+          rm -rf temp
 
 
   Linux_Standalone_Build:
