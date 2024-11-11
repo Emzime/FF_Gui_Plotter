@@ -60,8 +60,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
-      - name: Create release assets excluding specific files
+      - name: Ensure files are stable before creating archive
         run: |
+          # Attendez un moment pour vous assurer qu'aucune modification n'est en cours
+          sleep 5
+          # Créez l'archive
           tar --exclude='.github/*' --exclude='Builder/*' --exclude='.gitignore' -czf release_asset.tar.gz .
 
 
