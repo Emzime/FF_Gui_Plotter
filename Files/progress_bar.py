@@ -52,8 +52,8 @@ class ProgressBar:
                         self.handle_successful_plot_creation()
 
                     # Traitement lorsque la création d'un plot est réussie avec gigaHorse
-                    current_completed_GH_plot_match = self.pattern.currentCompletedGHPlot.search(line)
-                    if current_completed_GH_plot_match and not self.none_false_variable.bad_proof_found:
+                    current_completed_gh_plot_match = self.pattern.currentCompletedGHPlot.search(line)
+                    if current_completed_gh_plot_match and not self.none_false_variable.bad_proof_found:
                         self.handle_successful_plot_creation()
 
                     # Mise à jour de la barre de progression lorsque des étapes spécifiques sont détectées

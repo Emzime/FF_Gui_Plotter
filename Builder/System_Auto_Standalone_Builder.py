@@ -10,7 +10,7 @@ def build_executable():
     main_script_path = os.path.join(directory_path, "main.py")
 
     # Définir les chemins des images en tant que variables
-    FF_icon_path = os.path.join(directory_path, "Images/FF-icon.ico")
+    ff_icon_path = os.path.join(directory_path, "Images/FF-icon.ico")
 
     # Initialisation
     files_to_add = None
@@ -94,7 +94,7 @@ def build_executable():
     pyinstaller_cmd = (
         f"pyinstaller --noconfirm --onefile --windowed "
         f"--name \"French Farmer Gui\" "
-        f"--icon \"{FF_icon_path}\" "
+        f"--icon \"{ff_icon_path}\" "
     )
 
     # Ajouter les fichiers à la commande PyInstaller

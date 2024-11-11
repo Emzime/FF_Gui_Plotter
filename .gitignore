@@ -11,3 +11,4 @@ Builder/build/
 Builder/dist
 Builder/French Farmer Gui.spec
 /.github/workflows/release_publish-with.exe.yml
+old requierements.txt

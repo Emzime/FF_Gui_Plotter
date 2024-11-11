@@ -459,7 +459,7 @@ class FFPlotterGUI:
         ssd_temp2 = self.config_manager.read_config(self.config_manager.config_file).get("ssd_temp2move")
         ram_qty_gb = float(self.config_manager.read_config(self.config_manager.config_file).get("ram_qty"))
         gpu_1_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_1", "0"))
-        gpu_Qty_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_Qty", ""))
+        gpu_qty_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_Qty", ""))
         maxtmp_value = str(self.config_manager.read_config(self.config_manager.config_file).get("maxtmp", ""))
         copylimit_value = str(self.config_manager.read_config(self.config_manager.config_file).get("copylimit", ""))
         maxcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("maxcopy", ""))
@@ -495,9 +495,9 @@ class FFPlotterGUI:
             ])
 
         # Ajoute les arguments liés au GPU 2
-        if gpu_Qty_value:
+        if gpu_qty_value:
             command.extend([
-                "-r", gpu_Qty_value,
+                "-r", gpu_qty_value,
             ])
 
         # Ajoute les arguments liés -Q
@@ -536,10 +536,10 @@ class FFPlotterGUI:
             # Diviser par 2 pour windows
             ram_qty_gib_divided = math.floor(ram_qty_gib / 2)
             # Défini la variable pour la ram
-            ramQty = ram_qty_gib_divided
+            ram_qty = ram_qty_gib_divided
             # Ajoute les arguments liés à la ram pour windows
             command.extend([
-                "-M", str(int(ramQty)),
+                "-M", str(int(ram_qty)),
             ])
 
         # Ajoute les arguments liés au disque temporaire 2
@@ -605,15 +605,15 @@ class FFPlotterGUI:
 
                 # Appel de la commande en fonction du plotter
                 if plotter_name.startswith("bladebit"):
-                    setCommand = self.build_bladebit_cuda_command(selected_hdd)
+                    set_command = self.build_bladebit_cuda_command(selected_hdd)
                 else:
-                    setCommand = self.build_gigahorse_command(selected_hdd)
+                    set_command = self.build_gigahorse_command(selected_hdd)
 
                 # Crée le processus en exécutant la commande
                 system = platform.system()
                 if system == "Windows":
                     plotter_process = subprocess.Popen(
-                        setCommand,
+                        set_command,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         text=True,
@@ -622,7 +622,7 @@ class FFPlotterGUI:
                     )
                 else:
                     plotter_process = subprocess.Popen(
-                        setCommand,
+                        set_command,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         text=True,
@@ -645,7 +645,7 @@ class FFPlotterGUI:
                 print(f"PID: {self.none_false_variable.plotter_pid}")
 
                 # Message dans la file d'attente
-                self.queue_logs.log_queue_messages.put((f"{' '.join(setCommand)}", None))
+                self.queue_logs.log_queue_messages.put((f"{' '.join(set_command)}", None))
                 time.sleep(0.8)
 
                 # Démarre des threads pour surveiller la sortie standard de plotter
