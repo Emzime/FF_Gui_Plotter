@@ -60,6 +60,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
+      - name: List files before archiving
+        run: |
+          echo "Listing files in the repository:"
+          ls -alh .
+
       - name: Ensure files are stable before creating archive
         run: |
           # Attendez un moment pour vous assurer qu'aucune modification n'est en cours
