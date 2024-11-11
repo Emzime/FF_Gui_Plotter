@@ -62,8 +62,7 @@ jobs:
 
       - name: Create release assets excluding specific files
         run: |
-          # S'assurer que tous les fichiers sont stables avant de créer l'archive
-          tar --no-mtime --exclude='.github/*' --exclude='Builder/*' --exclude='.gitignore' -czf release_asset.tar.gz .
+          tar --exclude='.github/*' --exclude='Builder/*' --exclude='.gitignore' -czf release_asset.tar.gz .
 
 
   Linux_Standalone_Build:
