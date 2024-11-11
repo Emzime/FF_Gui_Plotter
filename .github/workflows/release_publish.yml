@@ -34,17 +34,17 @@ jobs:
 
       - name: Checkout Repository
         if: ${{ env.GREATER != 'false' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         if: ${{ env.GREATER != 'false' }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22.0'
 
       - name: Set up Python
         if: ${{ env.GREATER != 'false' }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
@@ -112,18 +112,18 @@ jobs:
 
       - name: Checkout Repository
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22.0'
 
       # Définition de la version Python
       - name: Set up Python
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
@@ -143,7 +143,7 @@ jobs:
 
       - name: Update Linux Release
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
@@ -201,18 +201,18 @@ jobs:
 
       - name: Checkout Repository
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22.0'
 
       # Définition de la version Python
       - name: Set up Python
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
@@ -294,18 +294,18 @@ jobs:
 
       - name: Checkout Repository
         if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22.0'
 
       # Définition de la version Python
       - name: Set up Python
         if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
