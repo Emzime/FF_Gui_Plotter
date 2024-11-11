@@ -205,11 +205,11 @@ class Interface:
         self.delPlot_button.config(cursor="hand2")
 
         # Chargez l'image dans une variable de classe spécifique pour le bouton de delPlot
-        delPlot_button_off_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "off.png"))
-        self.delPlot_button_off = tk.PhotoImage(file=delPlot_button_off_path)
+        delplot_button_off_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "off.png"))
+        self.delPlot_button_off = tk.PhotoImage(file=delplot_button_off_path)
 
-        delPlot_button_on_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "on.png"))
-        self.delPlot_button_on = tk.PhotoImage(file=delPlot_button_on_path)
+        delplot_button_on_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "on.png"))
+        self.delPlot_button_on = tk.PhotoImage(file=delplot_button_on_path)
 
         if self.plotter_gui.delCompressedPlot_status == Lang.translate("on"):
             self.delPlot_button.config(image=self.delPlot_button_on, background="#1C1C1C")
@@ -221,8 +221,8 @@ class Interface:
             self.plotter_gui.delCompressedPlot_status = Lang.translate("off")
 
         # Associer les fonctions aux événements de survol de la souris
-        self.delPlot_button.bind("<Enter>", self.onMouseEnter.delPlot_button)
-        self.delPlot_button.bind("<Leave>", self.onMouseLeave.delPlot_button)
+        self.delPlot_button.bind("<Enter>", self.onMouseEnter.delplot_button)
+        self.delPlot_button.bind("<Leave>", self.onMouseLeave.delplot_button)
 
         # Créez la Frame supérieure (top_column)
         top_right_column = tk.Frame(main_frame, bg="#1C1C1C")
@@ -497,7 +497,7 @@ class Interface:
             # Si le plotter est cuda_plot_k32, n'afficher que les compressions de 29 à 33
             compression_values = [str(compression) for compression in range(29, 34)]
             compression = int(current_compression)
-            ram_qty_values = ["16", "32", "64", "128", "192", "256", "384", "512", "768"]
+            ram_qty_values = ["16", "32", "64", "96", "128", "192", "256", "384", "512", "768"]
         else:
             # Si le plotter est un autre, n'afficher que les compressions de 1 à 9 et de 11 à 20
             compression_values = [str(compression) for compression in range(1, 21)]
@@ -505,7 +505,7 @@ class Interface:
             if '10' in compression_values:
                 compression_values.remove('10')
             compression = int(current_compression)
-            ram_qty_values = ["16", "32", "64", "128", "192", "256", "384", "512", "768"]
+            ram_qty_values = ["16", "32", "64", "96", "128", "192", "256", "384", "512", "768"]
 
         # Créer une variable pour la valeur de compression
         self.compression_var = tk.StringVar(value=str(compression))
@@ -683,7 +683,7 @@ class Interface:
         # Ligne 10 : GPU 1
         # Récupération des valeurs des GPU depuis la configuration
         gpu_1_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_1", ""))
-        gpu_Qty_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_Qty", ""))
+        gpu_qty_value = str(self.config_manager.read_config(self.config_manager.config_file).get("gpu_Qty", ""))
         waitforcopy_value = str(self.config_manager.read_config(self.config_manager.config_file).get("waitforcopy", ""))
 
         self.gpu_1_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text=Lang.translate("gpuOne"), anchor="center")
@@ -707,17 +707,17 @@ class Interface:
         # Ligne 10 : GPU 2
         self.gpu_Qty_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text=Lang.translate("gpuTwo"), anchor="center")
         self.gpu_Qty_label.grid(row=1, column=1, padx=(0, 0), pady=(5, 0), sticky="n")
-        self.gpu_Qty_value_var = tk.StringVar(value=gpu_Qty_value)
+        self.gpu_Qty_value_var = tk.StringVar(value=gpu_qty_value)
 
         self.gpu_Qty_combobox = ttk.Combobox(self.input_subframe_7, textvariable=self.gpu_Qty_value_var, width=5, state="readonly")
         self.gpu_Qty_combobox.grid(row=2, column=1, padx=(0, 0), pady=(0, 5), sticky="n")
         # Assignation des valeurs corrigées aux combobox
-        self.gpu_Qty_value_var.set(gpu_Qty_value)
+        self.gpu_Qty_value_var.set(gpu_qty_value)
         # Associez la fonction à l'événement de changement de la combobox
-        self.gpu_Qty_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.updateValues.gpu_Qty_config())
+        self.gpu_Qty_combobox.bind("<<ComboboxSelected>>", lambda event=None: self.updateValues.gpu_qty_config())
         # Associer les fonctions aux événements de survol de la souris
-        self.gpu_Qty_combobox.bind("<Enter>", self.onMouseEnter.gpu_Qty_info)
-        self.gpu_Qty_combobox.bind("<Leave>", self.onMouseLeave.gpu_Qty_info)
+        self.gpu_Qty_combobox.bind("<Enter>", self.onMouseEnter.gpu_qty_info)
+        self.gpu_Qty_combobox.bind("<Leave>", self.onMouseLeave.gpu_qty_info)
 
         # Ligne 11 : Max number of plots to cache in tmpdir -Q
         self.waitforcopy_label = ttk.Label(self.input_subframe_7, style="Custom.TLabel", text=Lang.translate("w_Flag"), anchor="center")
@@ -955,7 +955,7 @@ class Interface:
             close_img_path = self.static_method.resource_path(os.path.join(directory_path, "Images", "close.png"))
             self.plotter_gui.interface.expand_text_label.config(text=Lang.translate("open"), foreground="#0792ea")
         else:
-            self.message_text.config(height=10)
+            self.message_text.config(height=12)
             self.expanded = True
             directory_path = os.path.dirname(os.path.dirname(__file__))
             # Chargez l'image et redimensionnez-la
@@ -1028,10 +1028,10 @@ class UpdateValues:
         # Mise à jour du fichier de configuration
         self.plotter_gui.interface.config_manager.update_config({"gpu_1": selected_gpu_1}, self.plotter_gui.interface.config_manager.config_file)
 
-    def gpu_Qty_config(self):
-        selected_gpu_Qty = self.plotter_gui.interface.gpu_Qty_value_var.get()
+    def gpu_qty_config(self):
+        selected_gpu_qty = self.plotter_gui.interface.gpu_Qty_value_var.get()
         # Mise à jour du fichier de configuration
-        self.plotter_gui.interface.config_manager.update_config({"gpu_Qty": selected_gpu_Qty}, self.plotter_gui.interface.config_manager.config_file)
+        self.plotter_gui.interface.config_manager.update_config({"gpu_Qty": selected_gpu_qty}, self.plotter_gui.interface.config_manager.config_file)
 
     def waitforcopy_config(self):
         waitforcopy = self.plotter_gui.interface.waitforcopy_var.get()
@@ -1248,7 +1248,7 @@ class OnMouseEnter:
             font=("Arial", 12)
         )
 
-    def gpu_Qty_info(self, event):
+    def gpu_qty_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.gpu_Qty_label.configure(foreground="#00DF03")
@@ -1563,7 +1563,7 @@ class OnMouseEnter:
             font=("Arial", 12)
         )
 
-    def delPlot_button(self, event):
+    def delplot_button(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         # Affiche une main quand on passe la souris sur le lien
@@ -1621,7 +1621,7 @@ class OnMouseLeave:
         # Réinitialisation de la frame des messages
         self.update_message_text()
 
-    def gpu_Qty_info(self, event):
+    def gpu_qty_info(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         self.plotter_gui.interface.gpu_Qty_label.configure(foreground="#0792ea", cursor="arrow")
@@ -1666,7 +1666,9 @@ class OnMouseLeave:
         print(event)
         # Affiche le message en haut au centre
         self.plotter_gui.interface.title_Version_label.config(cursor="arrow")
-        self.plotter_gui.interface.title_Version_label.configure(text=Lang.translate("newVersionAvailable").format(latest_version=self.plotter_gui.interface.latest_version), background="#0792ea", foreground="#000000", highlightthickness=0, cursor="arrow")
+        self.plotter_gui.interface.title_Version_label.configure(
+            text=Lang.translate("newVersionAvailable").format(latest_version=self.plotter_gui.interface.latest_version), background="#0792ea", foreground="#000000", highlightthickness=0, cursor="arrow"
+        )
         # Réinitialisation de la frame des messages
         self.update_message_text()
 
@@ -1781,7 +1783,7 @@ class OnMouseLeave:
         # Réinitialisation de la frame des messages
         self.update_message_text()
 
-    def delPlot_button(self, event):
+    def delplot_button(self, event):
         # Accéder aux informations sur l'événement si nécessaire
         print(event)
         if self.plotter_gui.delCompressedPlot_status == Lang.translate("on"):

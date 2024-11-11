@@ -36,14 +36,14 @@ class LogManager:
             directory_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
             # Chemin du répertoire des logs
-            logFileName = f"{self.config_manager.log_name}{current_datetime}.log"
-            self.log_path = os.path.join(directory_path, "Logs", logFileName)
+            log_file_name = f"{self.config_manager.log_name}{current_datetime}.log"
+            self.log_path = os.path.join(directory_path, "Logs", log_file_name)
             os.makedirs(os.path.dirname(self.log_path), exist_ok=True)
             self.static_method.configure_logging(filename=self.log_path)
 
             # Chemin du répertoire des logs d'erreurs
-            logFileNameError = f"{self.config_manager.log_error_name}{current_datetime}.log"
-            self.log_error_path = os.path.join(directory_path, "Logs", logFileNameError)
+            log_file_name_error = f"{self.config_manager.log_error_name}{current_datetime}.log"
+            self.log_error_path = os.path.join(directory_path, "Logs", log_file_name_error)
             os.makedirs(os.path.dirname(self.log_error_path), exist_ok=True)
             self.static_method.configure_error_logging(filename=self.log_error_path)
 

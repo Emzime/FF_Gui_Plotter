@@ -66,4 +66,3 @@ pyinstaller_cmd.append(main_script_path)
 
 # Exécuter la commande PyInstaller
 os.system(" ".join(pyinstaller_cmd))
-
