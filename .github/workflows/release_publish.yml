@@ -143,7 +143,7 @@ jobs:
 
       - name: Update Linux Release
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
-        uses: actions/upload-release-asset@v2
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
