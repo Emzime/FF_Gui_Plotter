@@ -39,8 +39,6 @@ jobs:
       - name: Setup Node.js
         if: ${{ env.GREATER != 'false' }}
         uses: actions/setup-node@v4
-        with:
-          node-version: '22.0'
 
       - name: Set up Python
         if: ${{ env.GREATER != 'false' }}
@@ -52,16 +50,20 @@ jobs:
       - name: Create Release
         if: ${{ env.GREATER != 'false' }}
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@v1.14.0
         with:
           tag_name: "${{ env.VERSION }}"
           release_name: "FF_Gui v${{ env.VERSION }}"
           body: "Update release_publish.yml"
           draft: false
           prerelease: false
-          exclude: .github/** Builder/** .gitignore
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Create release assets excluding specific files
+        run: |
+          tar --exclude='.github/*' --exclude='Builder/*' --exclude='.gitignore' -czf release_asset.tar.gz .
+
 
 
   Linux_Standalone_Build:
@@ -117,8 +119,6 @@ jobs:
       - name: Setup Node.js
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
         uses: actions/setup-node@v4
-        with:
-          node-version: '22.0'
 
       # Définition de la version Python
       - name: Set up Python
@@ -206,8 +206,6 @@ jobs:
       - name: Setup Node.js
         if: ${{ env.LINUX_EXECUTABLE_EXISTS == 'false' }}
         uses: actions/setup-node@v4
-        with:
-          node-version: '22.0'
 
       # Définition de la version Python
       - name: Set up Python
@@ -299,8 +297,6 @@ jobs:
       - name: Setup Node.js
         if: ${{ env.WINDOWS_EXECUTABLE_EXISTS == 'false' }}
         uses: actions/setup-node@v4
-        with:
-          node-version: '22.0'
 
       # Définition de la version Python
       - name: Set up Python
